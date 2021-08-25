@@ -103,6 +103,9 @@ class Keys {
 
 
         @JvmStatic
+        val ARG_IS_LOCATOR_REGISTERED = "is_locator_registered"
+
+        @JvmStatic
         val SETTINGS_ACCURACY = "settings_accuracy"
 
         @JvmStatic

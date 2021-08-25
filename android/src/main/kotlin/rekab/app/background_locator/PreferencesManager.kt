@@ -161,6 +161,21 @@ class PreferencesManager {
         }
 
         @JvmStatic
+        fun saveLocatorRegistered(context: Context, isRegistered: Boolean) {
+            val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+
+            sharedPreferences.edit()
+                .putBoolean(Keys.ARG_IS_LOCATOR_REGISTERED, isRegistered)
+                .apply()
+        }
+
+        @JvmStatic
+        fun isLocatorRegistered(context: Context): Boolean {
+            val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+            return sharedPreferences.getBoolean(Keys.ARG_IS_LOCATOR_REGISTERED, false)
+        }
+
+        @JvmStatic
         fun setCallbackHandle(context: Context, key: String, handle: Long?) {
             if (handle == null) {
                 context.getSharedPreferences(Keys.SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE)

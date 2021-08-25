@@ -24,8 +24,8 @@ import rekab.app.background_locator.pluggables.InitPluggable
 
 class BackgroundLocatorPlugin
     : MethodCallHandler, FlutterPlugin, PluginRegistry.NewIntentListener, ActivityAware {
-    private var context: Context? = null
-    private var activity: Activity? = null
+    var context: Context? = null
+    var activity: Activity? = null
 
     companion object {
         @JvmStatic
@@ -89,6 +89,7 @@ class BackgroundLocatorPlugin
             }
 
             startIsolateService(context, settings)
+            PreferencesManager.saveLocatorRegistered(context, true)
 
             // We need to know when the service binded exactly, there is some delay between starting a
             // service and it's binding
@@ -154,6 +155,7 @@ class BackgroundLocatorPlugin
             }
 
             stopIsolateService(context)
+            PreferencesManager.saveLocatorRegistered(context, false)
 
             // We need to know when the service detached exactly, there is some delay between stopping a
             // service and it's detachment
@@ -202,7 +204,7 @@ class BackgroundLocatorPlugin
             plugin.context = context
 
             initializeService(context, settings)
-            startIsolateService(context, settings)
+            startIsolateService(context, settings["settings"] as Map<*, *>)
         }
     }
 
