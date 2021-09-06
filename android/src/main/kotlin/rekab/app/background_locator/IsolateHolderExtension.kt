@@ -9,6 +9,7 @@ import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.view.FlutterCallbackInformation
 import rekab.app.background_locator.provider.LocationRequestOptions
+import java.util.HashMap
 import java.util.concurrent.atomic.AtomicBoolean
 
 internal fun IsolateHolderService.startLocatorService(context: Context) {
@@ -44,13 +45,16 @@ internal fun IsolateHolderService.startLocatorService(context: Context) {
     backgroundChannel.setMethodCallHandler(this)
 }
 
-fun getLocationRequest(intent: Intent): LocationRequestOptions {
-    val interval: Long = (intent.getIntExtra(Keys.SETTINGS_INTERVAL, 10) * 1000).toLong()
-    val accuracyKey = intent.getIntExtra(Keys.SETTINGS_ACCURACY, 4)
-    val accuracy = getAccuracy(accuracyKey)
-    val distanceFilter = intent.getDoubleExtra(Keys.SETTINGS_DISTANCE_FILTER, 0.0)
-
-    return LocationRequestOptions(interval, accuracy, distanceFilter.toFloat())
+fun getLocationRequest(
+    interval: Int?,
+    accuracy: Int?,
+    distance: Double?,
+    isChargingMode: Boolean?
+): LocationRequestOptions {
+    if (isChargingMode == true) {
+        return LocationRequestOptions(10, LocationRequest.PRIORITY_HIGH_ACCURACY, 0f)
+    }
+    return LocationRequestOptions(interval?.toLong() ?: 10, getAccuracy(accuracy ?: 4), distance?.toFloat() ?: 0.0f)
 }
 
 fun getAccuracy(key: Int): Int {

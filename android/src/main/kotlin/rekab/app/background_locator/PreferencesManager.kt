@@ -84,6 +84,11 @@ class PreferencesManager {
                             (settings[Keys.SETTINGS_DISTANCE_FILTER] as Double).toFloat())
                     .apply()
 
+            sharedPreferences.edit()
+                    .putBoolean(Keys.SETTINGS_CHARGING_MODE_ENABLED,
+                            (settings[Keys.SETTINGS_CHARGING_MODE_ENABLED] as Boolean))
+                    .apply()
+
             if (settings.containsKey(Keys.SETTINGS_ANDROID_WAKE_LOCK_TIME)) {
                 sharedPreferences.edit()
                         .putInt(Keys.SETTINGS_ANDROID_WAKE_LOCK_TIME,
@@ -140,6 +145,9 @@ class PreferencesManager {
 
             settings[Keys.SETTINGS_DISTANCE_FILTER] =
                     sharedPreferences.getFloat(Keys.SETTINGS_DISTANCE_FILTER, 0f).toDouble()
+
+            settings[Keys.SETTINGS_CHARGING_MODE_ENABLED] =
+                    sharedPreferences.getBoolean(Keys.SETTINGS_CHARGING_MODE_ENABLED, false)
 
             if (sharedPreferences.contains(Keys.SETTINGS_ANDROID_WAKE_LOCK_TIME)) {
                 settings[Keys.SETTINGS_ANDROID_WAKE_LOCK_TIME] = sharedPreferences.getInt(Keys.SETTINGS_ANDROID_WAKE_LOCK_TIME, 0)

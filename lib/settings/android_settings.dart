@@ -58,14 +58,16 @@ class AndroidSettings extends LocatorSettings {
       double distanceFilter = 0,
       this.androidNotificationSettings = const AndroidNotificationSettings(),
       this.wakeLockTime = 60,
+      bool chargingModeEnabled = false,
       this.client = LocationClient.google})
-      : super(accuracy: accuracy, distanceFilter: distanceFilter);
+      : super(accuracy: accuracy, distanceFilter: distanceFilter, chargingModeEnabled: chargingModeEnabled);
 
   Map<String, dynamic> toMap() {
     return {
       Keys.SETTINGS_ACCURACY: accuracy.value,
       Keys.SETTINGS_INTERVAL: interval,
       Keys.SETTINGS_DISTANCE_FILTER: distanceFilter,
+      Keys.SETTINGS_CHARGING_MODE_ENABLED: chargingModeEnabled,
       Keys.SETTINGS_ANDROID_WAKE_LOCK_TIME: wakeLockTime,
       Keys.SETTINGS_ANDROID_NOTIFICATION_CHANNEL_NAME:
           androidNotificationSettings.notificationChannelName,

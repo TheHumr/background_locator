@@ -18,6 +18,7 @@ class Keys {
       'LocatorPlugin.updateNotification';
 
   static const String ARG_IS_MOCKED = 'is_mocked';
+  static const String ARG_IS_CHARGING = 'is_charging';
   static const String ARG_LATITUDE = 'latitude';
   static const String ARG_LONGITUDE = 'longitude';
   static const String ARG_ALTITUDE = 'altitude';
@@ -38,6 +39,7 @@ class Keys {
   static const String SETTINGS_ACCURACY = 'settings_accuracy';
   static const String SETTINGS_INTERVAL = 'settings_interval';
   static const String SETTINGS_DISTANCE_FILTER = 'settings_distanceFilter';
+  static const String SETTINGS_CHARGING_MODE_ENABLED = 'settings_chargingModeEnabled';
   static const String SETTINGS_AUTO_STOP = 'settings_autoStop';
   static const String SETTINGS_ANDROID_NOTIFICATION_CHANNEL_NAME =
       'settings_android_notificationChannelName';

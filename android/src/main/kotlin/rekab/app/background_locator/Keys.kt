@@ -24,6 +24,9 @@ class Keys {
         val DISPOSE_CALLBACK_HANDLE_KEY = "DISPOSE_CALLBACK_HANDLE_KEY"
 
         @JvmStatic
+        val CHARGING_CALLBACK_HANDLE_KEY = "CHARGING_CALLBACK_HANDLE_KEY"
+
+        @JvmStatic
         val CHANNEL_ID = "app.rekab/locator_plugin"
 
         @JvmStatic
@@ -58,6 +61,12 @@ class Keys {
 
         @JvmStatic
         val ARG_DISPOSE_CALLBACK = "disposeCallback"
+
+        @JvmStatic
+        val ARG_CHARGING_CALLBACK = "chargingCallback"
+
+        @JvmStatic
+        val ARG_IS_CHARGING = "is_charging"
 
         @JvmStatic
         val ARG_IS_MOCKED = "is_mocked"
@@ -115,6 +124,9 @@ class Keys {
         val SETTINGS_DISTANCE_FILTER = "settings_distanceFilter"
 
         @JvmStatic
+        val SETTINGS_CHARGING_MODE_ENABLED = "settings_chargingModeEnabled"
+
+        @JvmStatic
         val SETTINGS_ANDROID_NOTIFICATION_CHANNEL_NAME = "settings_android_notificationChannelName"
 
         @JvmStatic
@@ -155,6 +167,9 @@ class Keys {
 
         @JvmStatic
         val BCM_DISPOSE = "BCM_DISPOSE"
+
+        @JvmStatic
+        val BCM_CHARGING = "BCM_CHARGING"
 
         @JvmStatic
         val NOTIFICATION_ACTION = "com.rekab.background_locator.notification"

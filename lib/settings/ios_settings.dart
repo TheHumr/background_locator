@@ -14,7 +14,7 @@ class IOSSettings extends LocatorSettings {
     LocationAccuracy accuracy = LocationAccuracy.NAVIGATION,
     double distanceFilter = 0,
     this.showsBackgroundLocationIndicator = false,
-  }) : super(accuracy: accuracy, distanceFilter: distanceFilter); //minutes
+  }) : super(accuracy: accuracy, distanceFilter: distanceFilter, chargingModeEnabled: false); //minutes
 
   Map<String, dynamic> toMap() {
     return {

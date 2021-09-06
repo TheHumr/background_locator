@@ -1,12 +1,11 @@
 package rekab.app.background_locator
 
 import android.app.*
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
-import android.os.Handler
-import android.os.IBinder
-import android.os.PowerManager
+import android.content.IntentFilter
+import android.os.*
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import io.flutter.FlutterInjector
@@ -41,6 +40,9 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
 
         @JvmStatic
         var isServiceRunning = false
+
+        @JvmStatic
+        var isChargingMode: Boolean = false
     }
 
     private var notificationChannelName = "Flutter Locator Plugin"
@@ -51,6 +53,7 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
     private var icon = 0
     private var wakeLockTime = 60 * 60 * 1000L // 1 hour default wake lock time
     private var locatorClient: BLLocationProvider? = null
+    private var chargingStateChangeReceiver: BroadcastReceiver? = null
     internal lateinit var backgroundChannel: MethodChannel
     internal lateinit var context: Context
     private var pluggables: ArrayList<Pluggable> = ArrayList()
@@ -152,8 +155,21 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         notificationIconColor = intent.getLongExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_ICON_COLOR, 0).toInt()
         wakeLockTime = intent.getIntExtra(Keys.SETTINGS_ANDROID_WAKE_LOCK_TIME, 60) * 60 * 1000L
 
+        isChargingMode = intent.getBooleanExtra(Keys.SETTINGS_CHARGING_MODE_ENABLED, false) && isChargingMode
+
         locatorClient = getLocationClient(context)
-        locatorClient?.requestLocationUpdates(getLocationRequest(intent))
+        locatorClient?.requestLocationUpdates(getLocationRequest(
+            interval = intent.getIntExtra(Keys.SETTINGS_INTERVAL, 10),
+            accuracy = intent.getIntExtra(Keys.SETTINGS_ACCURACY, 4),
+            distance = intent.getDoubleExtra(Keys.SETTINGS_DISTANCE_FILTER, 0.0),
+            isChargingMode = isChargingMode,
+        ))
+
+        intent.getBooleanExtra(Keys.SETTINGS_CHARGING_MODE_ENABLED, false).let { enabled ->
+            if (enabled) {
+                registerChargingStateReceiver()
+            }
+        }
 
         // Fill pluggable list
         if( intent.hasExtra(Keys.SETTINGS_INIT_PLUGGABLE)) {
@@ -175,6 +191,8 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
                 }
             }
         }
+
+        unregisterChargingStateReceiver()
 
         locatorClient?.removeLocationUpdates()
         stopForeground(true)
@@ -250,6 +268,8 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         if (location != null) {
             val callback = PreferencesManager.getCallbackHandle(context, Keys.CALLBACK_HANDLE_KEY) as Long
 
+            location[Keys.ARG_IS_CHARGING] = isChargingMode
+
             val result: HashMap<Any, Any> =
                     hashMapOf(Keys.ARG_CALLBACK to callback,
                             Keys.ARG_LOCATION to location)
@@ -273,6 +293,58 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
                         backgroundChannel.invokeMethod(Keys.BCM_SEND_LOCATION, result)
                     }
         }
+    }
+
+    private fun registerChargingStateReceiver() {
+        chargingStateChangeReceiver = createChargingStateChangeReceiver()
+        context.registerReceiver(chargingStateChangeReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))?.let { intent ->
+            intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1).let { batteryStatus ->
+                isChargingMode = batteryStatus == BatteryManager.BATTERY_STATUS_CHARGING || batteryStatus == BatteryManager.BATTERY_STATUS_FULL
+            }
+        }
+    }
+
+    private fun unregisterChargingStateReceiver() {
+        if (chargingStateChangeReceiver != null) {
+            context.unregisterReceiver(chargingStateChangeReceiver)
+            chargingStateChangeReceiver = null
+        }
+    }
+
+    private fun createChargingStateChangeReceiver(): BroadcastReceiver {
+        return object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                val status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
+                when (status) {
+                    BatteryManager.BATTERY_STATUS_CHARGING, BatteryManager.BATTERY_STATUS_FULL -> {
+                        reloadLocationUpdates(context, true)
+                    }
+                    BatteryManager.BATTERY_STATUS_DISCHARGING -> {
+                        reloadLocationUpdates(context, false)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun reloadLocationUpdates(context: Context, isCharging: Boolean) {
+        if (isChargingMode != isCharging) {
+            isChargingMode = isCharging
+
+            locatorClient?.removeLocationUpdates()
+
+            val settingsArgs = PreferencesManager.getSettings(context)
+            val settings = settingsArgs[Keys.ARG_SETTINGS] as Map<*, *>
+            locatorClient?.requestLocationUpdates(
+                getLocationRequest(
+                    interval = settings[Keys.SETTINGS_INTERVAL] as? Int,
+                    accuracy = settings[Keys.SETTINGS_ACCURACY] as? Int,
+                    distance = settings[Keys.SETTINGS_DISTANCE_FILTER] as? Double,
+                    isChargingMode = isChargingMode,
+                )
+            )
+        }
+
     }
 
 }
