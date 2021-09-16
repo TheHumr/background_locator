@@ -64,4 +64,12 @@
     return [[NSUserDefaults standardUserDefaults] boolForKey:kPrefServiceRunning];
 }
 
++ (void)saveLastLocationDate:(NSDate*)date {
+    [[NSUserDefaults standardUserDefaults] setObject:date forKey:kLastLocationTimestampKey];
+}
+
++ (NSDate*)getLastLocationDate {
+    return [[NSUserDefaults standardUserDefaults] objectForKey:kLastLocationTimestampKey];
+}
+
 @end

@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (BOOL)isObservingRegion;
 + (void)setServiceRunning:(BOOL) running;
 + (BOOL)isServiceRunning;
++ (void)saveLastLocationDate:(NSDate*) date;
++ (NSDate*)getLastLocationDate;
 
 @end
 
