@@ -96,6 +96,9 @@ class Keys {
         val ARG_TIME = "time"
 
         @JvmStatic
+        val ARG_PROVIDER = "provider"
+
+        @JvmStatic
         val ARG_CALLBACK = "callback"
 
         @JvmStatic
