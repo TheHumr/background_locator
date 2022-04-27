@@ -56,7 +56,6 @@ static BackgroundLocatorPlugin *instance = nil;
 // iOS will launch the app when new location received
 - (BOOL)application:(UIApplication *)application
 didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    [application setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
     // Check to see if we're being launched due to a location event.
     if (launchOptions[UIApplicationLaunchOptionsLocationKey] != nil) {
         // Restart the headless service.
@@ -70,20 +69,6 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     }
     
     // Note: if we return NO, this vetos the launch of the application.
-    return YES;
-}
-
-- (BOOL)application:(UIApplication *)application performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
-    if ([PreferencesManager isServiceRunning]) {
-        NSDate *lastLocationDate = [PreferencesManager getLastLocationDate];
-        if (lastLocationDate != nil && [[NSDate date] timeIntervalSinceDate:lastLocationDate] > 5 * 60 && _locationManager.desiredAccuracy == kCLLocationAccuracyBestForNavigation) {
-            [_locationManager stopUpdatingLocation];
-            _locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters;
-            _locationManager.distanceFilter = 100;
-            [_locationManager startUpdatingLocation];
-        }
-    }
-    completionHandler(UIBackgroundFetchResultNewData);
     return YES;
 }
 
@@ -118,15 +103,8 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 - (void)locationManager:(CLLocationManager *)manager
      didUpdateLocations:(NSArray<CLLocation *> *)locations {
     if (locations.count > 0) {
-        if (_locationManager.desiredAccuracy != kCLLocationAccuracyBestForNavigation) {
-            [_locationManager stopUpdatingLocation];
-            _locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation;
-            _locationManager.distanceFilter = [PreferencesManager getDistanceFilter];
-            [_locationManager startUpdatingLocation];
-        }
         CLLocation* location = [locations objectAtIndex:0];
         [self prepareLocationMap: location];
-        [PreferencesManager saveLastLocationDate:[NSDate date]];
         if([PreferencesManager isObservingRegion]) {
             [self observeRegionForLocation: location];
             [_locationManager stopUpdatingLocation];
@@ -206,12 +184,12 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
                settings: (NSDictionary*)settings {
     [self->_locationManager requestAlwaysAuthorization];
         
-//    long accuracyKey = [[settings objectForKey:kSettingsAccuracy] longValue];
-//    CLLocationAccuracy accuracy = [Util getAccuracy:accuracyKey];
+    long accuracyKey = [[settings objectForKey:kSettingsAccuracy] longValue];
+    CLLocationAccuracy accuracy = [Util getAccuracy:accuracyKey];
     double distanceFilter = [[settings objectForKey:kSettingsDistanceFilter] doubleValue];
     bool  showsBackgroundLocationIndicator=[[settings objectForKey:kSettingsShowsBackgroundLocationIndicator] boolValue];
 
-    _locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters;
+    _locationManager.desiredAccuracy = accuracy;
     _locationManager.distanceFilter = distanceFilter;
     
     if (@available(iOS 11.0, *)) {
