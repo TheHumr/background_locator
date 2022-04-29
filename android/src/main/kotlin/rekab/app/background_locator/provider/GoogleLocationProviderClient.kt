@@ -21,10 +21,11 @@ class GoogleLocationProviderClient(context: Context, override var listener: Loca
         val locationRequest = LocationRequest.create()
 
         locationRequest.interval = request.interval
-        locationRequest.fastestInterval = request.interval
-        locationRequest.maxWaitTime = request.interval
+        locationRequest.fastestInterval = request.fastestInterval
+        locationRequest.maxWaitTime = request.maxWaitTime
         locationRequest.priority = request.accuracy
         locationRequest.smallestDisplacement = request.distanceFilter
+        locationRequest.isWaitForAccurateLocation = true
 
         return locationRequest
     }
@@ -32,6 +33,8 @@ class GoogleLocationProviderClient(context: Context, override var listener: Loca
 
 private class LocationListener(val listener: LocationUpdateListener?) : LocationCallback() {
     override fun onLocationResult(location: LocationResult?) {
-        listener?.onLocationUpdated(LocationParserUtil.getLocationMapFromLocation(location))
+        for (locationMap in LocationParserUtil.getLocationsMapFromLocation(location)) {
+            listener?.onLocationUpdated(locationMap)
+        }
     }
 }

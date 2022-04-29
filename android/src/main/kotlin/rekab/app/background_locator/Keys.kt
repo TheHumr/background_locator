@@ -124,6 +124,12 @@ class Keys {
         val SETTINGS_INTERVAL = "settings_interval"
 
         @JvmStatic
+        val SETTINGS_FASTEST_INTERVAL = "settings_fastest_interval"
+
+        @JvmStatic
+        val SETTINGS_MAX_WAIT_TIME = "settings_max_wait_time"
+
+        @JvmStatic
         val SETTINGS_DISTANCE_FILTER = "settings_distanceFilter"
 
         @JvmStatic

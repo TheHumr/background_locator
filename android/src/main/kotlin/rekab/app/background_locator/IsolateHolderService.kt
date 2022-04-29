@@ -160,6 +160,8 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         locatorClient = getLocationClient(context)
         locatorClient?.requestLocationUpdates(getLocationRequest(
             interval = intent.getIntExtra(Keys.SETTINGS_INTERVAL, 10),
+            fastestInterval = intent.getIntExtra(Keys.SETTINGS_FASTEST_INTERVAL, 5),
+            maxWaitTime = intent.getIntExtra(Keys.SETTINGS_MAX_WAIT_TIME, 10),
             accuracy = intent.getIntExtra(Keys.SETTINGS_ACCURACY, 4),
             distance = intent.getDoubleExtra(Keys.SETTINGS_DISTANCE_FILTER, 0.0),
             isChargingMode = isChargingMode,
@@ -289,7 +291,7 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
                     MethodChannel(backgroundEngine?.dartExecutor?.binaryMessenger, Keys.BACKGROUND_CHANNEL_ID)
             Handler(context.mainLooper)
                     .post {
-                        Log.d("plugin", "sendLocationEvent $result")
+//                        Log.d("plugin", "sendLocationEvent $result")
                         backgroundChannel.invokeMethod(Keys.BCM_SEND_LOCATION, result)
                     }
         }
@@ -338,6 +340,8 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
             locatorClient?.requestLocationUpdates(
                 getLocationRequest(
                     interval = settings[Keys.SETTINGS_INTERVAL] as? Int,
+                    fastestInterval = settings[Keys.SETTINGS_FASTEST_INTERVAL] as? Int,
+                    maxWaitTime = settings[Keys.SETTINGS_MAX_WAIT_TIME] as? Int,
                     accuracy = settings[Keys.SETTINGS_ACCURACY] as? Int,
                     distance = settings[Keys.SETTINGS_DISTANCE_FILTER] as? Double,
                     isChargingMode = isChargingMode,

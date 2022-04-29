@@ -39,6 +39,8 @@ class Keys {
 
   static const String SETTINGS_ACCURACY = 'settings_accuracy';
   static const String SETTINGS_INTERVAL = 'settings_interval';
+  static const String SETTINGS_FASTEST_INTERVAL = 'settings_fastest_interval';
+  static const String SETTINGS_MAX_WAIT_TIME = 'settings_max_wait_time';
   static const String SETTINGS_DISTANCE_FILTER = 'settings_distanceFilter';
   static const String SETTINGS_CHARGING_MODE_ENABLED = 'settings_chargingModeEnabled';
   static const String SETTINGS_AUTO_STOP = 'settings_autoStop';

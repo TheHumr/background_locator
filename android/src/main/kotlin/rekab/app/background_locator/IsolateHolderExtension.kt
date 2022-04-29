@@ -47,14 +47,16 @@ internal fun IsolateHolderService.startLocatorService(context: Context) {
 
 fun getLocationRequest(
     interval: Int?,
+    fastestInterval: Int?,
+    maxWaitTime: Int?,
     accuracy: Int?,
     distance: Double?,
     isChargingMode: Boolean?
 ): LocationRequestOptions {
     if (isChargingMode == true) {
-        return LocationRequestOptions(10, LocationRequest.PRIORITY_HIGH_ACCURACY, 0f)
+        return LocationRequestOptions(10 * 1000, 5 * 1000, 10 * 1000, LocationRequest.PRIORITY_HIGH_ACCURACY, 0f)
     }
-    return LocationRequestOptions(interval?.toLong() ?: 10, getAccuracy(accuracy ?: 4), distance?.toFloat() ?: 0.0f)
+    return LocationRequestOptions((interval?.toLong() ?: 10) * 1000, (fastestInterval?.toLong() ?: 5) * 1000, (maxWaitTime?.toLong() ?: 10) * 1000, getAccuracy(accuracy ?: 4), distance?.toFloat() ?: 0.0f)
 }
 
 fun getAccuracy(key: Int): Int {

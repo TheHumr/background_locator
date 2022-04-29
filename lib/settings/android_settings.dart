@@ -41,6 +41,8 @@ class AndroidSettings extends LocatorSettings {
   final AndroidNotificationSettings androidNotificationSettings;
   final int wakeLockTime;
   final int interval;
+  final int fastestInterval;
+  final int maxWaitTime;
   final LocationClient client;
 
   /// [accuracy] The accuracy of location, Default is max accuracy NAVIGATION.
@@ -54,7 +56,9 @@ class AndroidSettings extends LocatorSettings {
   /// [wakeLockTime] Time for living service in background in minutes. Only applies in android. Default is 60 minute.
   const AndroidSettings(
       {LocationAccuracy accuracy = LocationAccuracy.NAVIGATION,
-      this.interval = 5,
+      this.interval = 10,
+      this.fastestInterval = 5,
+      this.maxWaitTime = 10,
       double distanceFilter = 0,
       this.androidNotificationSettings = const AndroidNotificationSettings(),
       this.wakeLockTime = 60,
@@ -66,6 +70,8 @@ class AndroidSettings extends LocatorSettings {
     return {
       Keys.SETTINGS_ACCURACY: accuracy.value,
       Keys.SETTINGS_INTERVAL: interval,
+      Keys.SETTINGS_FASTEST_INTERVAL: fastestInterval,
+      Keys.SETTINGS_MAX_WAIT_TIME: maxWaitTime,
       Keys.SETTINGS_DISTANCE_FILTER: distanceFilter,
       Keys.SETTINGS_CHARGING_MODE_ENABLED: chargingModeEnabled,
       Keys.SETTINGS_ANDROID_WAKE_LOCK_TIME: wakeLockTime,

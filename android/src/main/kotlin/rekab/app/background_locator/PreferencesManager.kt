@@ -75,6 +75,16 @@ class PreferencesManager {
                     .apply()
 
             sharedPreferences.edit()
+                    .putInt(Keys.SETTINGS_FASTEST_INTERVAL,
+                            settings[Keys.SETTINGS_FASTEST_INTERVAL] as Int)
+                    .apply()
+
+            sharedPreferences.edit()
+                    .putInt(Keys.SETTINGS_MAX_WAIT_TIME,
+                            settings[Keys.SETTINGS_MAX_WAIT_TIME] as Int)
+                    .apply()
+
+            sharedPreferences.edit()
                     .putInt(Keys.SETTINGS_ACCURACY,
                             settings[Keys.SETTINGS_ACCURACY] as Int)
                     .apply()
@@ -139,6 +149,12 @@ class PreferencesManager {
 
             settings[Keys.SETTINGS_INTERVAL] =
                     sharedPreferences.getInt(Keys.SETTINGS_INTERVAL, 0)
+
+            settings[Keys.SETTINGS_FASTEST_INTERVAL] =
+                    sharedPreferences.getInt(Keys.SETTINGS_FASTEST_INTERVAL, 0)
+
+            settings[Keys.SETTINGS_MAX_WAIT_TIME] =
+                    sharedPreferences.getInt(Keys.SETTINGS_MAX_WAIT_TIME, 0)
 
             settings[Keys.SETTINGS_ACCURACY] =
                     sharedPreferences.getInt(Keys.SETTINGS_ACCURACY, 0)
