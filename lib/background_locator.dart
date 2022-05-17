@@ -23,7 +23,7 @@ class BackgroundLocator {
   }
 
   static Future<void> registerLocationUpdate(
-      void Function(LocationDto) callback,
+      void Function(List<LocationDto>) callback,
       {void Function(Map<String, dynamic>)? initCallback,
       Map<String, dynamic> initDataCallback = const {},
       void Function()? disposeCallback,

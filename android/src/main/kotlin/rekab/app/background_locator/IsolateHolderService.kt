@@ -260,21 +260,21 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         }
     }
 
-    override fun onLocationUpdated(location: HashMap<Any, Any>?) {
+    override fun onLocationUpdated(locations: List<HashMap<Any, Any>>?) {
         FlutterInjector.instance().flutterLoader().ensureInitializationComplete(context, null)
 
         //https://github.com/flutter/plugins/pull/1641
         //https://github.com/flutter/flutter/issues/36059
         //https://github.com/flutter/plugins/pull/1641/commits/4358fbba3327f1fa75bc40df503ca5341fdbb77d
         // new version of flutter can not invoke method from background thread
-        if (location != null) {
+        if (locations != null) {
             val callback = PreferencesManager.getCallbackHandle(context, Keys.CALLBACK_HANDLE_KEY) as Long
 
-            location[Keys.ARG_IS_CHARGING] = isChargingMode
+//            location[Keys.ARG_IS_CHARGING] = isChargingMode
 
             val result: HashMap<Any, Any> =
                     hashMapOf(Keys.ARG_CALLBACK to callback,
-                            Keys.ARG_LOCATION to location)
+                            Keys.ARG_LOCATION to locations)
 
             sendLocationEvent(result)
         }

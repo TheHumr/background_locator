@@ -8,7 +8,7 @@ import 'package:background_locator/settings/ios_settings.dart';
 
 class SettingsUtil {
   static Map<String, dynamic> getArgumentsMap(
-      {required void Function(LocationDto) callback,
+      {required void Function(List<LocationDto>) callback,
       void Function(Map<String, dynamic>)? initCallback,
       Map<String, dynamic>? initDataCallback,
       void Function()? disposeCallback,
@@ -29,7 +29,7 @@ class SettingsUtil {
   }
 
   static Map<String, dynamic> _getCommonArgumentsMap({
-    required void Function(LocationDto) callback,
+    required void Function(List<LocationDto>) callback,
     void Function(Map<String, dynamic>)? initCallback,
     Map<String, dynamic>? initDataCallback,
     void Function()? disposeCallback

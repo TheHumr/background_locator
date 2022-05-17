@@ -15,19 +15,17 @@ class LocationDto {
   final String provider;
   final bool isChargingMode;
 
-  LocationDto._(
-    this.latitude,
-    this.longitude,
-    this.accuracy,
-    this.altitude,
-    this.speed,
-    this.speedAccuracy,
-    this.heading,
-    this.time,
-    this.isMocked,
-    this.provider,
-    this.isChargingMode,
-  );
+  LocationDto._(this.latitude,
+      this.longitude,
+      this.accuracy,
+      this.altitude,
+      this.speed,
+      this.speedAccuracy,
+      this.heading,
+      this.time,
+      this.isMocked,
+      this.provider,
+      this.isChargingMode,);
 
   factory LocationDto.fromJson(Map<dynamic, dynamic> json) {
     bool isLocationMocked = Platform.isAndroid ? json[Keys.ARG_IS_MOCKED] : false;
@@ -64,6 +62,7 @@ class LocationDto {
 
   @override
   String toString() {
-    return 'LocationDto{latitude: $latitude, longitude: $longitude, accuracy: $accuracy, altitude: $altitude, speed: $speed, speedAccuracy: $speedAccuracy, heading: $heading, time: $time, isMocked: $isMocked, provider: $provider}';
+    return "latitude: ${latitude.toStringAsFixed(6)}, longitude: ${longitude.toStringAsFixed(6)}, altitude: ${altitude.round()}, accuracy: ${accuracy.round()}, bearing: ${heading
+        .round()}, speed: ${speed.round()}, time: ${DateTime.fromMillisecondsSinceEpoch(time.toInt())}";
   }
 }

@@ -33,8 +33,6 @@ class GoogleLocationProviderClient(context: Context, override var listener: Loca
 
 private class LocationListener(val listener: LocationUpdateListener?) : LocationCallback() {
     override fun onLocationResult(location: LocationResult?) {
-        for (locationMap in LocationParserUtil.getLocationsMapFromLocation(location)) {
-            listener?.onLocationUpdated(locationMap)
-        }
+        listener?.onLocationUpdated(LocationParserUtil.getLocationsMapFromLocation(location))
     }
 }

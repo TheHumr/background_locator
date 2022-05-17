@@ -126,7 +126,7 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     
     NSDictionary *map = @{
                      kArgCallback : @([PreferencesManager getCallbackHandle:kCallbackKey]),
-                     kArgLocation: location
+                     kArgLocation: @[ location ]
                      };
     [_callbackChannel invokeMethod:kBCMSendLocation arguments:map];
 }
