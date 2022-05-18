@@ -1,5 +1,6 @@
 import 'package:background_locator/keys.dart';
 import 'package:background_locator/settings/locator_settings.dart';
+import 'package:background_locator/tracking_mode.dart';
 import 'package:flutter/material.dart';
 
 enum LocationClient { google, android }
@@ -30,8 +31,7 @@ class AndroidNotificationSettings {
       {this.notificationChannelName = 'Location tracking',
       this.notificationTitle = 'Start Location Tracking',
       this.notificationMsg = 'Track location in background',
-      this.notificationBigMsg =
-          'Background location is on to keep the app up-tp-date with your location. This is required for main features to work properly when the app is not running.',
+      this.notificationBigMsg = 'Background location is on to keep the app up-tp-date with your location. This is required for main features to work properly when the app is not running.',
       this.notificationIcon = '',
       this.notificationIconColor = Colors.grey,
       this.notificationTapCallback});
@@ -62,9 +62,10 @@ class AndroidSettings extends LocatorSettings {
       double distanceFilter = 0,
       this.androidNotificationSettings = const AndroidNotificationSettings(),
       this.wakeLockTime = 60,
+      TrackingMode trackingMode = TrackingMode.fast,
       bool chargingModeEnabled = false,
       this.client = LocationClient.google})
-      : super(accuracy: accuracy, distanceFilter: distanceFilter, chargingModeEnabled: chargingModeEnabled);
+      : super(accuracy: accuracy, distanceFilter: distanceFilter, trackingMode: trackingMode, chargingModeEnabled: chargingModeEnabled);
 
   Map<String, dynamic> toMap() {
     return {
@@ -73,20 +74,15 @@ class AndroidSettings extends LocatorSettings {
       Keys.SETTINGS_FASTEST_INTERVAL: fastestInterval,
       Keys.SETTINGS_MAX_WAIT_TIME: maxWaitTime,
       Keys.SETTINGS_DISTANCE_FILTER: distanceFilter,
+      Keys.SETTINGS_TRACKING_MODE: trackingMode.id,
       Keys.SETTINGS_CHARGING_MODE_ENABLED: chargingModeEnabled,
       Keys.SETTINGS_ANDROID_WAKE_LOCK_TIME: wakeLockTime,
-      Keys.SETTINGS_ANDROID_NOTIFICATION_CHANNEL_NAME:
-          androidNotificationSettings.notificationChannelName,
-      Keys.SETTINGS_ANDROID_NOTIFICATION_TITLE:
-          androidNotificationSettings.notificationTitle,
-      Keys.SETTINGS_ANDROID_NOTIFICATION_MSG:
-          androidNotificationSettings.notificationMsg,
-      Keys.SETTINGS_ANDROID_NOTIFICATION_BIG_MSG:
-          androidNotificationSettings.notificationBigMsg,
-      Keys.SETTINGS_ANDROID_NOTIFICATION_ICON:
-          androidNotificationSettings.notificationIcon,
-      Keys.SETTINGS_ANDROID_NOTIFICATION_ICON_COLOR:
-          androidNotificationSettings.notificationIconColor.value,
+      Keys.SETTINGS_ANDROID_NOTIFICATION_CHANNEL_NAME: androidNotificationSettings.notificationChannelName,
+      Keys.SETTINGS_ANDROID_NOTIFICATION_TITLE: androidNotificationSettings.notificationTitle,
+      Keys.SETTINGS_ANDROID_NOTIFICATION_MSG: androidNotificationSettings.notificationMsg,
+      Keys.SETTINGS_ANDROID_NOTIFICATION_BIG_MSG: androidNotificationSettings.notificationBigMsg,
+      Keys.SETTINGS_ANDROID_NOTIFICATION_ICON: androidNotificationSettings.notificationIcon,
+      Keys.SETTINGS_ANDROID_NOTIFICATION_ICON_COLOR: androidNotificationSettings.notificationIconColor.value,
       Keys.SETTINGS_ANDROID_LOCATION_CLIENT: client.index
     };
   }

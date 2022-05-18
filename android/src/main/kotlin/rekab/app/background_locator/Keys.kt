@@ -113,6 +113,9 @@ class Keys {
         @JvmStatic
         val ARG_CALLBACK_DISPATCHER = "callbackDispatcher"
 
+        @JvmStatic
+        val ARG_TRACKING_MODE = "trackingMode"
+
 
         @JvmStatic
         val ARG_IS_LOCATOR_REGISTERED = "is_locator_registered"
@@ -131,6 +134,9 @@ class Keys {
 
         @JvmStatic
         val SETTINGS_DISTANCE_FILTER = "settings_distanceFilter"
+
+        @JvmStatic
+        val SETTINGS_TRACKING_MODE = "settings_tracking_mode"
 
         @JvmStatic
         val SETTINGS_CHARGING_MODE_ENABLED = "settings_chargingModeEnabled"
@@ -178,7 +184,7 @@ class Keys {
         val BCM_DISPOSE = "BCM_DISPOSE"
 
         @JvmStatic
-        val BCM_CHARGING = "BCM_CHARGING"
+        val BCM_TRACKING_MODE = "BCM_TRACKING_MODE"
 
         @JvmStatic
         val NOTIFICATION_ACTION = "com.rekab.background_locator.notification"

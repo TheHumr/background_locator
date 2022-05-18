@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:background_locator/tracking_mode.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -17,7 +18,7 @@ void callbackDispatcher() {
       final List<LocationDto> locationList = <LocationDto>[];
       args[Keys.ARG_LOCATION].forEach((dynamic e) => locationList.add(LocationDto.fromJson(e)));
       final Function callback = PluginUtilities.getCallbackFromHandle(CallbackHandle.fromRawHandle(args[Keys.ARG_CALLBACK]))!;
-      callback(locationList);
+      callback(locationList, null);
     } else if (Keys.BCM_NOTIFICATION_CLICK == call.method) {
       final Map<dynamic, dynamic> args = call.arguments;
       final Function? notificationCallback = PluginUtilities.getCallbackFromHandle(CallbackHandle.fromRawHandle(args[Keys.ARG_NOTIFICATION_CALLBACK]));
@@ -31,12 +32,11 @@ void callbackDispatcher() {
       if (initCallback != null) {
         initCallback(data);
       }
-    } else if (Keys.BCM_DISPOSE == call.method) {
+    } else if (Keys.BCM_TRACKING_MODE == call.method) {
       final Map<dynamic, dynamic> args = call.arguments;
-      final Function? disposeCallback = PluginUtilities.getCallbackFromHandle(CallbackHandle.fromRawHandle(args[Keys.ARG_DISPOSE_CALLBACK]));
-      if (disposeCallback != null) {
-        disposeCallback();
-      }
+      final int trackingMode = args[Keys.ARG_TRACKING_MODE];
+      final Function callback = PluginUtilities.getCallbackFromHandle(CallbackHandle.fromRawHandle(args[Keys.ARG_CALLBACK]))!;
+      callback(null, TrackingMode.values[trackingMode]);
     }
   });
   _backgroundChannel.invokeMethod(Keys.METHOD_SERVICE_INITIALIZED);

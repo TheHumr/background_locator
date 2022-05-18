@@ -36,12 +36,14 @@ class Keys {
   static const String ARG_LOCATION = 'location';
   static const String ARG_SETTINGS = 'settings';
   static const String ARG_CALLBACK_DISPATCHER = 'callbackDispatcher';
+  static const String ARG_TRACKING_MODE = 'trackingMode';
 
   static const String SETTINGS_ACCURACY = 'settings_accuracy';
   static const String SETTINGS_INTERVAL = 'settings_interval';
   static const String SETTINGS_FASTEST_INTERVAL = 'settings_fastest_interval';
   static const String SETTINGS_MAX_WAIT_TIME = 'settings_max_wait_time';
   static const String SETTINGS_DISTANCE_FILTER = 'settings_distanceFilter';
+  static const String SETTINGS_TRACKING_MODE = 'settings_tracking_mode';
   static const String SETTINGS_CHARGING_MODE_ENABLED = 'settings_chargingModeEnabled';
   static const String SETTINGS_AUTO_STOP = 'settings_autoStop';
   static const String SETTINGS_ANDROID_NOTIFICATION_CHANNEL_NAME =
@@ -68,4 +70,5 @@ class Keys {
   static const String BCM_NOTIFICATION_CLICK = 'BCM_NOTIFICATION_CLICK';
   static const String BCM_INIT = 'BCM_INIT';
   static const String BCM_DISPOSE = 'BCM_DISPOSE';
+  static const String BCM_TRACKING_MODE = 'BCM_TRACKING_MODE';
 }
