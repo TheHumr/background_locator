@@ -354,7 +354,7 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         //https://github.com/flutter/plugins/pull/1641/commits/4358fbba3327f1fa75bc40df503ca5341fdbb77d
         // new version of flutter can not invoke method from background thread
         if (backgroundEngine != null) {
-            val backgroundChannel = MethodChannel(backgroundEngine?.dartExecutor?.binaryMessenger, Keys.BACKGROUND_CHANNEL_ID)
+            val backgroundChannel = MethodChannel(backgroundEngine!!.dartExecutor!!.binaryMessenger!!, Keys.BACKGROUND_CHANNEL_ID)
             Handler(context.mainLooper).post {
                 backgroundChannel.invokeMethod(method, arguments)
             }

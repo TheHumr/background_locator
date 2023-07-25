@@ -12,7 +12,7 @@ class LocationDto {
   final double heading;
   final double time;
   final bool isMocked;
-  final String provider;
+  final String? provider;
   final bool isChargingMode;
 
   LocationDto._(this.latitude,
