@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:background_locator_2/settings/android_settings.dart';
+import 'package:background_locator_2/tracking_mode.dart';
 import 'package:background_locator_2/settings/ios_settings.dart';
 import 'package:background_locator_2/utils/settings_util.dart';
 import 'package:flutter/services.dart';
@@ -25,7 +26,7 @@ class BackgroundLocator {
   static WidgetsBinding? get _widgetsBinding => WidgetsBinding.instance;
 
   static Future<void> registerLocationUpdate(
-      void Function(LocationDto) callback,
+      void Function(List<LocationDto>?, TrackingMode?) callback,
       {void Function(Map<String, dynamic>)? initCallback,
       Map<String, dynamic> initDataCallback = const {},
       void Function()? disposeCallback,

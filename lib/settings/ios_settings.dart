@@ -1,4 +1,5 @@
 import 'package:background_locator_2/keys.dart';
+import 'package:background_locator_2/tracking_mode.dart';
 
 import 'locator_settings.dart';
 
@@ -17,9 +18,10 @@ class IOSSettings extends LocatorSettings {
   const IOSSettings({
     LocationAccuracy accuracy = LocationAccuracy.NAVIGATION,
     double distanceFilter = 0,
+    TrackingMode trackingMode = TrackingMode.fast,
     this.showsBackgroundLocationIndicator = false,
     this.stopWithTerminate = false,
-  }) : super(accuracy: accuracy, distanceFilter: distanceFilter); //minutes
+  }) : super(accuracy: accuracy, distanceFilter: distanceFilter, trackingMode: trackingMode, chargingModeEnabled: false); //minutes
 
   Map<String, dynamic> toMap() {
     return {

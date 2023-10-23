@@ -24,6 +24,9 @@ class Keys {
         val DISPOSE_CALLBACK_HANDLE_KEY = "DISPOSE_CALLBACK_HANDLE_KEY"
 
         @JvmStatic
+        val CHARGING_CALLBACK_HANDLE_KEY = "CHARGING_CALLBACK_HANDLE_KEY"
+
+        @JvmStatic
         val CHANNEL_ID = "app.yukams/locator_plugin"
 
         @JvmStatic
@@ -58,6 +61,12 @@ class Keys {
 
         @JvmStatic
         val ARG_DISPOSE_CALLBACK = "disposeCallback"
+
+        @JvmStatic
+        val ARG_CHARGING_CALLBACK = "chargingCallback"
+
+        @JvmStatic
+        val ARG_IS_CHARGING = "is_charging"
 
         @JvmStatic
         val ARG_IS_MOCKED = "is_mocked"
@@ -104,6 +113,9 @@ class Keys {
         @JvmStatic
         val ARG_CALLBACK_DISPATCHER = "callbackDispatcher"
 
+        @JvmStatic
+        val ARG_TRACKING_MODE = "trackingMode"
+
 
         @JvmStatic
         val SETTINGS_ACCURACY = "settings_accuracy"
@@ -112,7 +124,19 @@ class Keys {
         val SETTINGS_INTERVAL = "settings_interval"
 
         @JvmStatic
+        val SETTINGS_FASTEST_INTERVAL = "settings_fastest_interval"
+
+        @JvmStatic
+        val SETTINGS_MAX_WAIT_TIME = "settings_max_wait_time"
+
+        @JvmStatic
         val SETTINGS_DISTANCE_FILTER = "settings_distanceFilter"
+
+        @JvmStatic
+        val SETTINGS_TRACKING_MODE = "settings_tracking_mode"
+
+        @JvmStatic
+        val SETTINGS_CHARGING_MODE_ENABLED = "settings_chargingModeEnabled"
 
         @JvmStatic
         val SETTINGS_ANDROID_NOTIFICATION_CHANNEL_NAME = "settings_android_notificationChannelName"
@@ -155,6 +179,9 @@ class Keys {
 
         @JvmStatic
         val BCM_DISPOSE = "BCM_DISPOSE"
+
+        @JvmStatic
+        val BCM_TRACKING_MODE = "BCM_TRACKING_MODE"
 
         @JvmStatic
         val NOTIFICATION_ACTION = "com.yukams.background_locator_2.notification"

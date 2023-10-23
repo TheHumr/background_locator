@@ -13,6 +13,7 @@ class LocationDto {
   final double time;
   final bool isMocked;
   final String provider;
+  final bool isChargingMode;
 
   LocationDto._(
     this.latitude,
@@ -25,6 +26,7 @@ class LocationDto {
     this.time,
     this.isMocked,
     this.provider,
+    this.isChargingMode,
   );
 
   factory LocationDto.fromJson(Map<dynamic, dynamic> json) {
@@ -41,6 +43,7 @@ class LocationDto {
       json[Keys.ARG_TIME],
       isLocationMocked,
       json[Keys.ARG_PROVIDER] ?? '',
+      json[Keys.ARG_IS_CHARGING] ?? false,
     );
   }
 
@@ -56,6 +59,7 @@ class LocationDto {
       Keys.ARG_TIME: this.time,
       Keys.ARG_IS_MOCKED: this.isMocked,
       Keys.ARG_PROVIDER: this.provider,
+      Keys.ARG_IS_CHARGING: this.isChargingMode,
     };
   }
 

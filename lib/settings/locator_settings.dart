@@ -1,3 +1,5 @@
+import 'package:background_locator_2/tracking_mode.dart';
+
 class LocationAccuracy {
   const LocationAccuracy._internal(this.value);
 
@@ -13,9 +15,11 @@ class LocationAccuracy {
 class LocatorSettings {
   final LocationAccuracy accuracy;
   final double distanceFilter;
+  final TrackingMode trackingMode;
+  final bool chargingModeEnabled;
 
   /// [accuracy] The accuracy of location, Default is max accuracy NAVIGATION.
   ///
   /// [distanceFilter] distance in meter to trigger location update, Default is 0 meter.
-  const LocatorSettings({required this.accuracy, required this.distanceFilter});
+  const LocatorSettings({required this.accuracy, required this.distanceFilter, required this.trackingMode, required this.chargingModeEnabled});
 }

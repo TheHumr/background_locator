@@ -1,5 +1,6 @@
 import 'package:background_locator_2/keys.dart';
 import 'package:background_locator_2/settings/locator_settings.dart';
+import 'package:background_locator_2/tracking_mode.dart';
 import 'package:flutter/material.dart';
 
 enum LocationClient { google, android }
@@ -41,6 +42,8 @@ class AndroidSettings extends LocatorSettings {
   final AndroidNotificationSettings androidNotificationSettings;
   final int wakeLockTime;
   final int interval;
+  final int fastestInterval;
+  final int maxWaitTime;
   final LocationClient client;
 
   /// [accuracy] The accuracy of location, Default is max accuracy NAVIGATION.
@@ -55,17 +58,25 @@ class AndroidSettings extends LocatorSettings {
   const AndroidSettings(
       {LocationAccuracy accuracy = LocationAccuracy.NAVIGATION,
       this.interval = 5,
+      this.fastestInterval = 5,
+      this.maxWaitTime = 10,
       double distanceFilter = 0,
       this.androidNotificationSettings = const AndroidNotificationSettings(),
       this.wakeLockTime = 60,
+      TrackingMode trackingMode = TrackingMode.fast,
+      bool chargingModeEnabled = false,
       this.client = LocationClient.google})
-      : super(accuracy: accuracy, distanceFilter: distanceFilter);
+      : super(accuracy: accuracy, distanceFilter: distanceFilter, trackingMode: trackingMode, chargingModeEnabled: chargingModeEnabled);
 
   Map<String, dynamic> toMap() {
     return {
       Keys.SETTINGS_ACCURACY: accuracy.value,
       Keys.SETTINGS_INTERVAL: interval,
+      Keys.SETTINGS_FASTEST_INTERVAL: fastestInterval,
+      Keys.SETTINGS_MAX_WAIT_TIME: maxWaitTime,
       Keys.SETTINGS_DISTANCE_FILTER: distanceFilter,
+      Keys.SETTINGS_TRACKING_MODE: trackingMode.id,
+      Keys.SETTINGS_CHARGING_MODE_ENABLED: chargingModeEnabled,
       Keys.SETTINGS_ANDROID_WAKE_LOCK_TIME: wakeLockTime,
       Keys.SETTINGS_ANDROID_NOTIFICATION_CHANNEL_NAME:
           androidNotificationSettings.notificationChannelName,

@@ -2,8 +2,10 @@ package yukams.app.background_locator_2
 
 import android.app.*
 import android.Manifest
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
@@ -11,6 +13,7 @@ import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import android.content.pm.PackageManager
+import android.os.BatteryManager
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.BinaryMessenger
@@ -47,6 +50,9 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         var isServiceRunning = false
 
         @JvmStatic
+        var trackingMode: TrackingMode = TrackingMode.Slow
+
+        @JvmStatic
         var isServiceInitialized = false
 
         fun getBinaryMessenger(context: Context?): BinaryMessenger? {
@@ -70,6 +76,7 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
     private var icon = 0
     private var wakeLockTime = 60 * 60 * 1000L // 1 hour default wake lock time
     private var locatorClient: BLLocationProvider? = null
+    private var chargingStateChangeReceiver: BroadcastReceiver? = null
     internal lateinit var backgroundChannel: MethodChannel
     internal var context: Context? = null
     private var pluggables: ArrayList<Pluggable> = ArrayList()
@@ -195,8 +202,16 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
             intent.getLongExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_ICON_COLOR, 0).toInt()
         wakeLockTime = intent.getIntExtra(Keys.SETTINGS_ANDROID_WAKE_LOCK_TIME, 60) * 60 * 1000L
 
+        trackingMode = if (trackingMode == TrackingMode.Fast || intent.getIntExtra(Keys.SETTINGS_TRACKING_MODE, 0) == 0) TrackingMode.Fast else TrackingMode.Slow
+
         locatorClient = context?.let { getLocationClient(it) }
-        locatorClient?.requestLocationUpdates(getLocationRequest(intent))
+        locatorClient?.requestLocationUpdates(getLocationRequest(trackingMode))
+
+        intent.getBooleanExtra(Keys.SETTINGS_CHARGING_MODE_ENABLED, false).let { enabled ->
+            if (enabled) {
+                registerChargingStateReceiver()
+            }
+        }
 
         // Fill pluggable list
         if (intent.hasExtra(Keys.SETTINGS_INIT_PLUGGABLE)) {
@@ -219,6 +234,8 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
                 }
             }
         }
+
+        unregisterChargingStateReceiver()
 
         locatorClient?.removeLocationUpdates()
         stopForeground(true)
@@ -293,7 +310,7 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         }
     }
 
-    override fun onLocationUpdated(location: HashMap<Any, Any>?) {
+    override fun onLocationUpdated(locations: List<HashMap<Any, Any>>?) {
         try {
             context?.let {
                 FlutterInjector.instance().flutterLoader().ensureInitializationComplete(
@@ -305,7 +322,7 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
             //https://github.com/flutter/flutter/issues/36059
             //https://github.com/flutter/plugins/pull/1641/commits/4358fbba3327f1fa75bc40df503ca5341fdbb77d
             // new version of flutter can not invoke method from background thread
-            if (location != null) {
+            if (locations != null) {
                 val callback =
                     context?.let {
                         PreferencesManager.getCallbackHandle(
@@ -317,7 +334,7 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
                 val result: HashMap<Any, Any> =
                     hashMapOf(
                         Keys.ARG_CALLBACK to callback,
-                        Keys.ARG_LOCATION to location
+                        Keys.ARG_LOCATION to locations
                     )
 
                 sendLocationEvent(result)
@@ -328,6 +345,84 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
     }
 
     private fun sendLocationEvent(result: HashMap<Any, Any>) {
+        invokeBackgroundChannelMethod(Keys.BCM_SEND_LOCATION, result)
+    }
+
+    private fun onTrackingModeUpdated(trackingMode: TrackingMode) {
+        context?.let {
+            FlutterInjector.instance().flutterLoader().ensureInitializationComplete(it, null)
+
+            val callback = PreferencesManager.getCallbackHandle(it, Keys.CALLBACK_HANDLE_KEY) as Long
+
+            val result: HashMap<Any, Any> =
+                hashMapOf(
+                    Keys.ARG_CALLBACK to callback,
+                    Keys.ARG_TRACKING_MODE to trackingMode.value
+                )
+
+            sendTrackingModeEvent(result)
+
+        }
+    }
+
+    private fun sendTrackingModeEvent(result: HashMap<Any, Any>) {
+        invokeBackgroundChannelMethod(Keys.BCM_TRACKING_MODE, result)
+    }
+
+    private fun registerChargingStateReceiver() {
+        chargingStateChangeReceiver = createChargingStateChangeReceiver()
+        context?.let {
+            it.registerReceiver(chargingStateChangeReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))?.let { intent ->
+                intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1).let { batteryStatus ->
+                    val isChargingMode = batteryStatus == BatteryManager.BATTERY_STATUS_CHARGING || batteryStatus == BatteryManager.BATTERY_STATUS_FULL
+                    val trackingMode = if (isChargingMode || PreferencesManager.getTrackingMode(it) == TrackingMode.Fast) TrackingMode.Fast else TrackingMode.Slow
+                    reloadLocationUpdates(it, trackingMode)
+                }
+            }
+        }
+    }
+
+    private fun unregisterChargingStateReceiver() {
+        if (chargingStateChangeReceiver != null) {
+            context?.let {
+                it.unregisterReceiver(chargingStateChangeReceiver)
+                chargingStateChangeReceiver = null
+            }
+        }
+    }
+
+    private fun createChargingStateChangeReceiver(): BroadcastReceiver {
+        return object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                when (intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)) {
+                    BatteryManager.BATTERY_STATUS_CHARGING, BatteryManager.BATTERY_STATUS_FULL -> {
+                        reloadLocationUpdates(context, TrackingMode.Fast)
+                    }
+                    BatteryManager.BATTERY_STATUS_DISCHARGING -> {
+                        reloadLocationUpdates(context, PreferencesManager.getTrackingMode(context))
+                    }
+                }
+            }
+        }
+    }
+
+    private fun reloadLocationUpdates(context: Context, trackingMode: TrackingMode) {
+        if (IsolateHolderService.trackingMode != trackingMode) {
+            IsolateHolderService.trackingMode = trackingMode
+            onTrackingModeUpdated(trackingMode)
+
+            locatorClient?.removeLocationUpdates()
+
+            locatorClient?.requestLocationUpdates(
+                getLocationRequest(
+                    trackingMode = trackingMode
+                )
+            )
+        }
+
+    }
+
+    private fun invokeBackgroundChannelMethod(method: String, result: HashMap<Any, Any>) {
         //https://github.com/flutter/plugins/pull/1641
         //https://github.com/flutter/flutter/issues/36059
         //https://github.com/flutter/plugins/pull/1641/commits/4358fbba3327f1fa75bc40df503ca5341fdbb77d

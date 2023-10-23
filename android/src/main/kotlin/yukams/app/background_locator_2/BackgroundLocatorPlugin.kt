@@ -25,7 +25,7 @@ import yukams.app.background_locator_2.pluggables.InitPluggable
 class BackgroundLocatorPlugin
     : MethodCallHandler, FlutterPlugin, PluginRegistry.NewIntentListener, ActivityAware {
     var context: Context? = null
-    private var activity: Activity? = null
+    var activity: Activity? = null
 
     companion object {
         @JvmStatic
@@ -114,9 +114,13 @@ class BackgroundLocatorPlugin
                     settings[Keys.SETTINGS_ANDROID_NOTIFICATION_ICON] as? String)
             intent.putExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_ICON_COLOR,
                     settings[Keys.SETTINGS_ANDROID_NOTIFICATION_ICON_COLOR] as? Long)
-            intent.putExtra(Keys.SETTINGS_INTERVAL, settings[Keys.SETTINGS_INTERVAL] as? Int)
+            intent.putExtra(Keys.SETTINGS_INTERVAL, settings[Keys.SETTINGS_INTERVAL] as Int)
+            intent.putExtra(Keys.SETTINGS_FASTEST_INTERVAL, settings[Keys.SETTINGS_FASTEST_INTERVAL] as Int)
+            intent.putExtra(Keys.SETTINGS_MAX_WAIT_TIME, settings[Keys.SETTINGS_MAX_WAIT_TIME] as Int)
             intent.putExtra(Keys.SETTINGS_ACCURACY, settings[Keys.SETTINGS_ACCURACY] as? Int)
             intent.putExtra(Keys.SETTINGS_DISTANCE_FILTER, settings[Keys.SETTINGS_DISTANCE_FILTER] as? Double)
+            intent.putExtra(Keys.SETTINGS_TRACKING_MODE, settings[Keys.SETTINGS_TRACKING_MODE] as? Int)
+            intent.putExtra(Keys.SETTINGS_CHARGING_MODE_ENABLED, settings[Keys.SETTINGS_CHARGING_MODE_ENABLED] as? Boolean)
 
             if (settings.containsKey(Keys.SETTINGS_ANDROID_WAKE_LOCK_TIME)) {
                 intent.putExtra(Keys.SETTINGS_ANDROID_WAKE_LOCK_TIME,

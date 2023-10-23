@@ -82,13 +82,11 @@ internal fun IsolateHolderService.startLocatorService(context: Context) {
     }
 }
 
-fun getLocationRequest(intent: Intent): LocationRequestOptions {
-    val interval: Long = (intent.getIntExtra(Keys.SETTINGS_INTERVAL, 10) * 1000).toLong()
-    val accuracyKey = intent.getIntExtra(Keys.SETTINGS_ACCURACY, 4)
-    val accuracy = getAccuracy(accuracyKey)
-    val distanceFilter = intent.getDoubleExtra(Keys.SETTINGS_DISTANCE_FILTER, 0.0)
-
-    return LocationRequestOptions(interval, accuracy, distanceFilter.toFloat())
+fun getLocationRequest(trackingMode: TrackingMode): LocationRequestOptions {
+    if (trackingMode == TrackingMode.Fast) {
+        return LocationRequestOptions(10 * 1000, 10 * 1000, 30 * 1000, LocationRequest.PRIORITY_HIGH_ACCURACY, 0.0f)
+    }
+    return LocationRequestOptions(60 * 1000, 10 * 1000, 60 * 5 * 1000, LocationRequest.PRIORITY_HIGH_ACCURACY, 0.0f)
 }
 
 fun getAccuracy(key: Int): Int {

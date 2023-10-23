@@ -76,6 +76,16 @@ class PreferencesManager {
                     .apply()
 
             sharedPreferences.edit()
+                    .putInt(Keys.SETTINGS_FASTEST_INTERVAL,
+                        settings[Keys.SETTINGS_FASTEST_INTERVAL] as Int)
+                    .apply()
+
+            sharedPreferences.edit()
+                    .putInt(Keys.SETTINGS_MAX_WAIT_TIME,
+                        settings[Keys.SETTINGS_MAX_WAIT_TIME] as Int)
+                    .apply()
+
+            sharedPreferences.edit()
                     .putInt(Keys.SETTINGS_ACCURACY,
                             settings[Keys.SETTINGS_ACCURACY] as Int)
                     .apply()
@@ -83,6 +93,16 @@ class PreferencesManager {
             sharedPreferences.edit()
                     .putFloat(Keys.SETTINGS_DISTANCE_FILTER,
                             (settings[Keys.SETTINGS_DISTANCE_FILTER] as Double).toFloat())
+                    .apply()
+
+            sharedPreferences.edit()
+                    .putBoolean(Keys.SETTINGS_CHARGING_MODE_ENABLED,
+                        (settings[Keys.SETTINGS_CHARGING_MODE_ENABLED] as Boolean))
+                    .apply()
+
+            sharedPreferences.edit()
+                    .putInt(Keys.SETTINGS_TRACKING_MODE,
+                        (settings[Keys.SETTINGS_TRACKING_MODE] as Int))
                     .apply()
 
             if (settings.containsKey(Keys.SETTINGS_ANDROID_WAKE_LOCK_TIME)) {
@@ -136,11 +156,23 @@ class PreferencesManager {
             settings[Keys.SETTINGS_INTERVAL] =
                     sharedPreferences.getInt(Keys.SETTINGS_INTERVAL, 0)
 
+            settings[Keys.SETTINGS_FASTEST_INTERVAL] =
+                    sharedPreferences.getInt(Keys.SETTINGS_FASTEST_INTERVAL, 0)
+
+            settings[Keys.SETTINGS_MAX_WAIT_TIME] =
+                    sharedPreferences.getInt(Keys.SETTINGS_MAX_WAIT_TIME, 0)
+
             settings[Keys.SETTINGS_ACCURACY] =
                     sharedPreferences.getInt(Keys.SETTINGS_ACCURACY, 0)
 
             settings[Keys.SETTINGS_DISTANCE_FILTER] =
                     sharedPreferences.getFloat(Keys.SETTINGS_DISTANCE_FILTER, 0f).toDouble()
+
+            settings[Keys.SETTINGS_CHARGING_MODE_ENABLED] =
+                    sharedPreferences.getBoolean(Keys.SETTINGS_CHARGING_MODE_ENABLED, false)
+
+            settings[Keys.SETTINGS_TRACKING_MODE] =
+                    sharedPreferences.getInt(Keys.SETTINGS_TRACKING_MODE, 0)
 
             if (sharedPreferences.contains(Keys.SETTINGS_ANDROID_WAKE_LOCK_TIME)) {
                 settings[Keys.SETTINGS_ANDROID_WAKE_LOCK_TIME] = sharedPreferences.getInt(Keys.SETTINGS_ANDROID_WAKE_LOCK_TIME, 0)
@@ -151,6 +183,14 @@ class PreferencesManager {
 
             result[Keys.ARG_SETTINGS] = settings
             return result
+        }
+
+        @JvmStatic
+        fun getTrackingMode(context: Context): TrackingMode {
+            val sharedPreferences =
+                context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+            val mode = sharedPreferences.getInt(Keys.SETTINGS_TRACKING_MODE, 0)
+            return TrackingMode.fromInt(mode) ?: TrackingMode.Fast
         }
 
         @JvmStatic

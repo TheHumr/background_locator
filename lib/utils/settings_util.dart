@@ -5,10 +5,11 @@ import 'package:background_locator_2/keys.dart';
 import 'package:background_locator_2/location_dto.dart';
 import 'package:background_locator_2/settings/android_settings.dart';
 import 'package:background_locator_2/settings/ios_settings.dart';
+import 'package:background_locator_2/tracking_mode.dart';
 
 class SettingsUtil {
   static Map<String, dynamic> getArgumentsMap(
-      {required void Function(LocationDto) callback,
+      {required void Function(List<LocationDto>?, TrackingMode?) callback,
       void Function(Map<String, dynamic>)? initCallback,
       Map<String, dynamic>? initDataCallback,
       void Function()? disposeCallback,
@@ -29,7 +30,7 @@ class SettingsUtil {
   }
 
   static Map<String, dynamic> _getCommonArgumentsMap({
-    required void Function(LocationDto) callback,
+    required void Function(List<LocationDto>?, TrackingMode?) callback,
     void Function(Map<String, dynamic>)? initCallback,
     Map<String, dynamic>? initDataCallback,
     void Function()? disposeCallback
