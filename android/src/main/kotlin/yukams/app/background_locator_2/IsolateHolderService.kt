@@ -202,7 +202,7 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
             intent.getLongExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_ICON_COLOR, 0).toInt()
         wakeLockTime = intent.getIntExtra(Keys.SETTINGS_ANDROID_WAKE_LOCK_TIME, 60) * 60 * 1000L
 
-        trackingMode = if (trackingMode == TrackingMode.Fast || intent.getIntExtra(Keys.SETTINGS_TRACKING_MODE, 0) == 0) TrackingMode.Fast else TrackingMode.Slow
+        trackingMode = TrackingMode.fromInt(intent.getIntExtra(Keys.SETTINGS_TRACKING_MODE, 0)) ?: TrackingMode.Fast
 
         locatorClient = context?.let { getLocationClient(it) }
         locatorClient?.requestLocationUpdates(getLocationRequest(trackingMode))
