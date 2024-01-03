@@ -21,6 +21,16 @@ class PreferencesManager {
         }
 
         @JvmStatic
+        fun saveRegistered(context: Context, isRegistered: Boolean) {
+            val sharedPreferences =
+                    context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+
+            sharedPreferences.edit()
+                .putBoolean(Keys.ARG_IS_REGISTERED, isRegistered)
+                .apply()
+        }
+
+        @JvmStatic
         fun saveSettings(context: Context, map: Map<Any, Any>) {
             val sharedPreferences =
                     context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
@@ -199,6 +209,13 @@ class PreferencesManager {
                     context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
             val client = sharedPreferences.getInt(Keys.SETTINGS_ANDROID_LOCATION_CLIENT, 0)
             return LocationClient.fromInt(client) ?: LocationClient.Google
+        }
+
+        @JvmStatic
+        fun getRegistered(context: Context): Boolean {
+            val sharedPreferences =
+                context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+            return sharedPreferences.getBoolean(Keys.ARG_IS_REGISTERED, false)
         }
 
         @JvmStatic

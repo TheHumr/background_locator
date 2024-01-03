@@ -203,6 +203,8 @@ class BackgroundLocatorPlugin
 
         @JvmStatic
         fun registerAfterBoot(context: Context) {
+            if (!PreferencesManager.getRegistered(context)) return
+
             val args = PreferencesManager.getSettings(context)
 
             val plugin = BackgroundLocatorPlugin()
@@ -237,8 +239,9 @@ class BackgroundLocatorPlugin
             Keys.METHOD_PLUGIN_REGISTER_LOCATION_UPDATE -> {
                 val args: Map<Any, Any>? = call.arguments()
 
-                // save setting to use it when device reboots
+                PreferencesManager.saveRegistered(context!!, true)
 
+                // save setting to use it when device reboots
                 PreferencesManager.saveSettings(context!!, args!!)
 
                 registerLocator(context!!,
@@ -246,6 +249,7 @@ class BackgroundLocatorPlugin
                         result)
             }
             Keys.METHOD_PLUGIN_UN_REGISTER_LOCATION_UPDATE -> {
+                PreferencesManager.saveRegistered(context!!, false)
                 unRegisterPlugin(context!!, result)
             }
             Keys.METHOD_PLUGIN_IS_REGISTER_LOCATION_UPDATE -> isServiceRunning(result)

@@ -111,6 +111,9 @@ class Keys {
         val ARG_SETTINGS = "settings"
 
         @JvmStatic
+        val ARG_IS_REGISTERED = "is_registered"
+
+        @JvmStatic
         val ARG_CALLBACK_DISPATCHER = "callbackDispatcher"
 
         @JvmStatic
