@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
 import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.Priority
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.dart.DartExecutor
@@ -84,9 +85,9 @@ internal fun IsolateHolderService.startLocatorService(context: Context) {
 
 fun getLocationRequest(trackingMode: TrackingMode): LocationRequestOptions {
     if (trackingMode == TrackingMode.Fast) {
-        return LocationRequestOptions(10 * 1000, 10 * 1000, 30 * 1000, LocationRequest.PRIORITY_HIGH_ACCURACY, 0.0f)
+        return LocationRequestOptions(10 * 1000, 10 * 1000, 30 * 1000, Priority.PRIORITY_HIGH_ACCURACY, 0.0f)
     }
-    return LocationRequestOptions(60 * 1000, 10 * 1000, 60 * 5 * 1000, LocationRequest.PRIORITY_HIGH_ACCURACY, 0.0f)
+    return LocationRequestOptions(60 * 1000, 10 * 1000, 60 * 5 * 1000, Priority.PRIORITY_HIGH_ACCURACY, 0.0f)
 }
 
 fun getAccuracy(key: Int): Int {

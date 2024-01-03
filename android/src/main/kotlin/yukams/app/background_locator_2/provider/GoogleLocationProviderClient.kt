@@ -18,16 +18,12 @@ class GoogleLocationProviderClient(context: Context, override var listener: Loca
     }
 
     private fun getLocationRequest(request: LocationRequestOptions): LocationRequest {
-        val locationRequest = LocationRequest.create()
-
-        locationRequest.interval = request.interval
-        locationRequest.fastestInterval = request.fastestInterval
-        locationRequest.maxWaitTime = request.maxWaitTime
-        locationRequest.priority = request.accuracy
-        locationRequest.smallestDisplacement = request.distanceFilter
-        locationRequest.isWaitForAccurateLocation = true
-
-        return locationRequest
+        return LocationRequest.Builder(request.accuracy, request.interval)
+            .setMinUpdateDistanceMeters(request.distanceFilter)
+            .setMinUpdateIntervalMillis(request.fastestInterval)
+            .setMaxUpdateDelayMillis(request.maxWaitTime)
+            .setWaitForAccurateLocation(true)
+            .build()
     }
 }
 
