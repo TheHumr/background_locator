@@ -26,7 +26,7 @@ class BackgroundLocator {
   static WidgetsBinding? get _widgetsBinding => WidgetsBinding.instance;
 
   static Future<void> registerLocationUpdate(
-      void Function(List<LocationDto>?, TrackingMode?) callback,
+      void Function(Map<String, dynamic>) callback,
       {void Function(Map<String, dynamic>)? initCallback,
       Map<String, dynamic> initDataCallback = const {},
       void Function()? disposeCallback,

@@ -37,6 +37,7 @@ class Keys {
   static const String ARG_SETTINGS = 'settings';
   static const String ARG_CALLBACK_DISPATCHER = 'callbackDispatcher';
   static const String ARG_TRACKING_MODE = 'trackingMode';
+  static const String ARG_ACTIVITY_RECOGNITION_MODE = 'activityRecognitionMode';
 
   static const String SETTINGS_ACCURACY = 'settings_accuracy';
   static const String SETTINGS_INTERVAL = 'settings_interval';
@@ -73,4 +74,5 @@ class Keys {
   static const String BCM_INIT = 'BCM_INIT';
   static const String BCM_DISPOSE = 'BCM_DISPOSE';
   static const String BCM_TRACKING_MODE = 'BCM_TRACKING_MODE';
+  static const String BCM_ACTIVITY_RECOGNITION = 'BCM_ACTIVITY_RECOGNITION';
 }

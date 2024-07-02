@@ -25,6 +25,9 @@ import yukams.app.background_locator_2.pluggables.Pluggable
 import yukams.app.background_locator_2.provider.*
 import java.util.HashMap
 import androidx.core.app.ActivityCompat
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+import yukams.app.background_locator_2.flutter_activity_recognition.service.ActivityRecognitionManager
 
 class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateListener, Service() {
     companion object {
@@ -80,6 +83,7 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
     internal lateinit var backgroundChannel: MethodChannel
     internal var context: Context? = null
     private var pluggables: ArrayList<Pluggable> = ArrayList()
+    private val activityRecognitionManager: ActivityRecognitionManager = ActivityRecognitionManager()
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -209,9 +213,13 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
 
         intent.getBooleanExtra(Keys.SETTINGS_CHARGING_MODE_ENABLED, false).let { enabled ->
             if (enabled) {
-                registerChargingStateReceiver()
+                runBlocking {
+                    registerChargingStateReceiver()
+                }
             }
         }
+
+        context?.let { registerActivityRecognition(it) }
 
         // Fill pluggable list
         if (intent.hasExtra(Keys.SETTINGS_INIT_PLUGGABLE)) {
@@ -236,6 +244,8 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         }
 
         unregisterChargingStateReceiver()
+
+        context?.let { unregisterActivityRecognition(it) }
 
         locatorClient?.removeLocationUpdates()
         stopForeground(true)
@@ -369,13 +379,18 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         invokeBackgroundChannelMethod(Keys.BCM_TRACKING_MODE, result)
     }
 
-    private fun registerChargingStateReceiver() {
+    private fun sendActivityRecognitionEvent(result: HashMap<Any, Any>) {
+        invokeBackgroundChannelMethod(Keys.BCM_ACTIVITY_RECOGNITION, result)
+    }
+
+    private suspend fun registerChargingStateReceiver() {
         chargingStateChangeReceiver = createChargingStateChangeReceiver()
         context?.let {
             it.registerReceiver(chargingStateChangeReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))?.let { intent ->
                 intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1).let { batteryStatus ->
                     val isChargingMode = batteryStatus == BatteryManager.BATTERY_STATUS_CHARGING || batteryStatus == BatteryManager.BATTERY_STATUS_FULL
                     val trackingMode = if (isChargingMode || PreferencesManager.getTrackingMode(it) == TrackingMode.Fast) TrackingMode.Fast else TrackingMode.Slow
+                    delay(2000)
                     reloadLocationUpdates(it, trackingMode)
                 }
             }
@@ -404,6 +419,30 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
                 }
             }
         }
+    }
+
+    private fun registerActivityRecognition(context: Context) {
+        activityRecognitionManager.startService(
+                context = context,
+                onSuccess = { },
+                onError = {
+                    Log.e("ACTIVITY RECOGNITION", it.toString())
+                },
+                updatesListener = {
+                    val callback = PreferencesManager.getCallbackHandle(context, Keys.CALLBACK_HANDLE_KEY) as Long
+
+                    val map = hashMapOf<Any, Any>(
+                            Keys.ARG_CALLBACK to callback,
+                            Keys.ARG_ACTIVITY_RECOGNITION_MODE to it
+                    )
+
+                    sendActivityRecognitionEvent(map)
+                }
+        )
+    }
+
+    private fun unregisterActivityRecognition(context: Context) {
+        activityRecognitionManager.stopService(context)
     }
 
     private fun reloadLocationUpdates(context: Context, trackingMode: TrackingMode) {
@@ -437,8 +476,7 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
                     )
                 Handler(it.mainLooper)
                     .post {
-                        Log.d("plugin", "sendLocationEvent $result")
-                        backgroundChannel.invokeMethod(Keys.BCM_SEND_LOCATION, result)
+                        backgroundChannel.invokeMethod(method, result)
                     }
             }
         }

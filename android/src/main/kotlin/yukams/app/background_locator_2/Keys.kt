@@ -119,6 +119,9 @@ class Keys {
         @JvmStatic
         val ARG_TRACKING_MODE = "trackingMode"
 
+        @JvmStatic
+        val ARG_ACTIVITY_RECOGNITION_MODE = "activityRecognitionMode"
+
 
         @JvmStatic
         val SETTINGS_ACCURACY = "settings_accuracy"
@@ -185,6 +188,9 @@ class Keys {
 
         @JvmStatic
         val BCM_TRACKING_MODE = "BCM_TRACKING_MODE"
+
+        @JvmStatic
+        val BCM_ACTIVITY_RECOGNITION = "BCM_ACTIVITY_RECOGNITION"
 
         @JvmStatic
         val NOTIFICATION_ACTION = "com.yukams.background_locator_2.notification"

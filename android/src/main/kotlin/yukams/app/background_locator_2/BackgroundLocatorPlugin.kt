@@ -17,7 +17,6 @@ import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
 import yukams.app.background_locator_2.pluggables.DisposePluggable
 import yukams.app.background_locator_2.pluggables.InitPluggable
@@ -25,14 +24,14 @@ import yukams.app.background_locator_2.pluggables.InitPluggable
 class BackgroundLocatorPlugin
     : MethodCallHandler, FlutterPlugin, PluginRegistry.NewIntentListener, ActivityAware {
     var context: Context? = null
-    var activity: Activity? = null
+    private var activity: Activity? = null
 
     companion object {
         @JvmStatic
         private var channel: MethodChannel? = null
 
         @JvmStatic
-        private fun sendResultWithDelay(context: Context, result: Result?, value: Boolean, delay: Long) {
+        private fun sendResultWithDelay(context: Context, result: MethodChannel.Result?, value: Boolean, delay: Long) {
             context.mainLooper.let {
                 Handler(it).postDelayed({
                     result?.success(value)
@@ -44,11 +43,11 @@ class BackgroundLocatorPlugin
         @JvmStatic
         private fun registerLocator(context: Context,
                                     args: Map<Any, Any>,
-                                    result: Result?) {
+                                    result: MethodChannel.Result) {
             if (IsolateHolderService.isServiceRunning) {
                 // The service is running already
                 Log.d("BackgroundLocatorPlugin", "Locator service is already running")
-                result?.success(true)
+                result.success(true)
                 return
             }
 
@@ -152,7 +151,7 @@ class BackgroundLocatorPlugin
         }
 
         @JvmStatic
-        private fun unRegisterPlugin(context: Context, result: Result?) {
+        private fun unRegisterPlugin(context: Context, result: MethodChannel.Result?) {
             if (!IsolateHolderService.isServiceRunning) {
                 // The service is not running
                 Log.d("BackgroundLocatorPlugin", "Locator service is not running, nothing to stop")
@@ -169,7 +168,7 @@ class BackgroundLocatorPlugin
         }
 
         @JvmStatic
-        private fun isServiceRunning(result: Result?) {
+        private fun isServiceRunning(result: MethodChannel.Result?) {
             result?.success(IsolateHolderService.isServiceRunning)
         }
 
@@ -222,7 +221,7 @@ class BackgroundLocatorPlugin
         }
     }
 
-    override fun onMethodCall(call: MethodCall, result: Result) {
+    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
             Keys.METHOD_PLUGIN_INITIALIZE_SERVICE -> {
                 val args: Map<Any, Any>? = call.arguments()

@@ -1,0 +1,9 @@
+package yukams.app.background_locator_2.flutter_activity_recognition.errors
+
+enum class ErrorCodes {
+	ACTIVITY_NOT_ATTACHED,
+	PERMISSION_REQUEST_CANCELLED,
+	ACTIVITY_UPDATES_REQUEST_FAILED,
+	ACTIVITY_UPDATES_REMOVE_FAILED,
+	ACTIVITY_DATA_ENCODING_FAILED
+}

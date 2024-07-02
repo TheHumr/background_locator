@@ -18,12 +18,12 @@ void callbackDispatcher() {
       final List<LocationDto> locationList = <LocationDto>[];
       args[Keys.ARG_LOCATION].forEach((dynamic e) => locationList.add(LocationDto.fromJson(e)));
       final Function callback = PluginUtilities.getCallbackFromHandle(CallbackHandle.fromRawHandle(args[Keys.ARG_CALLBACK]))!;
-      callback(locationList, null);
+      callback({Keys.ARG_LOCATION: locationList});
     } else if (Keys.BCM_NOTIFICATION_CLICK == call.method) {
       final Map<dynamic, dynamic> args = call.arguments;
       final Function? notificationCallback =
-          PluginUtilities.getCallbackFromHandle(CallbackHandle.fromRawHandle(
-              args[Keys.ARG_NOTIFICATION_CALLBACK]));
+      PluginUtilities.getCallbackFromHandle(CallbackHandle.fromRawHandle(
+          args[Keys.ARG_NOTIFICATION_CALLBACK]));
       if (notificationCallback != null) {
         notificationCallback();
       }
@@ -46,7 +46,12 @@ void callbackDispatcher() {
       final Map<dynamic, dynamic> args = call.arguments;
       final int trackingMode = args[Keys.ARG_TRACKING_MODE];
       final Function callback = PluginUtilities.getCallbackFromHandle(CallbackHandle.fromRawHandle(args[Keys.ARG_CALLBACK]))!;
-      callback(null, TrackingMode.values[trackingMode]);
+      callback({Keys.ARG_TRACKING_MODE: TrackingMode.values[trackingMode]});
+    } else if (Keys.BCM_ACTIVITY_RECOGNITION == call.method) {
+      final Map<dynamic, dynamic> args = call.arguments;
+      final activityRecognitionMode = args[Keys.ARG_ACTIVITY_RECOGNITION_MODE];
+      final Function callback = PluginUtilities.getCallbackFromHandle(CallbackHandle.fromRawHandle(args[Keys.ARG_CALLBACK]))!;
+      callback({Keys.ARG_ACTIVITY_RECOGNITION_MODE: activityRecognitionMode});
     }
   });
   _backgroundChannel.invokeMethod(Keys.METHOD_SERVICE_INITIALIZED);
