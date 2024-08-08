@@ -1,4 +1,5 @@
 import CoreLocation
+import CoreMotion
 import Flutter
 import UIKit
 
@@ -10,6 +11,7 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
     private var _registrar: FlutterPluginRegistrar!
     private var _locationManager: CLLocationManager!
     private var _lastLocation: CLLocation!
+    private let _activityManager = CMMotionActivityManager()
 
     static var registerPlugins: FlutterPluginRegistrantCallback?
     static var instance: BackgroundLocatorPlugin?
@@ -88,7 +90,7 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
 
     func prepareLocationMap(location: CLLocation!) {
         _lastLocation = location
-        let locationMap: NSDictionary! = Util.getLocationMap(location: location)
+        let locationMap: NSDictionary = Util.getLocationMap(location: location)
 
         self.sendLocationEvent(location: locationMap)
     }
@@ -144,6 +146,64 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
         _locationManager = CLLocationManager()
         _locationManager.delegate = self
         _locationManager.pausesLocationUpdatesAutomatically = false
+    }
+
+    // MARK: ActivityManager Methods
+    func registerActivityRecognition() {
+        print("registerActivityRecognition")
+        _activityManager.startActivityUpdates(to: OperationQueue.init()) { (activity) in
+            if let a = activity {
+                
+                let data: NSDictionary = [
+                    "type": self.extractActivityType(a: a),
+                    "confidence": self.extractActivityConfidence(a: a)
+                ]
+                
+                self.sendActivityRecognitionEvent(data: data)
+            }
+        }
+    }
+    
+    func unregisterActivityRecognition() {
+        _activityManager.stopActivityUpdates()
+    }
+    
+    func sendActivityRecognitionEvent(data: NSDictionary) {
+        let isolateId = _headlessRunner.isolateId
+        if _callbackChannel == nil || isolateId == nil {
+            return
+        }
+        
+        do {
+            let jsonData = try JSONSerialization.data(withJSONObject: data)
+            let jsonString = String(data: jsonData, encoding: .ascii)
+            
+            guard let jsonString = jsonString else {
+                return
+            }
+            
+            let map: NSDictionary! = [
+                kArgCallback: PreferencesManager.getCallbackHandle(key: kCallbackKey),
+                kArgActivityRecognitionMode: jsonString,
+            ]
+            _callbackChannel.invokeMethod(kBCMActivityRecognition, arguments: map)
+        } catch {
+            debugPrint()
+        }
+    }
+    
+    func getLocationMap(location: CLLocation) -> NSDictionary {
+        let timeInSeconds: TimeInterval = location.timestamp.timeIntervalSince1970
+        return [
+            kArgLatitude: location.coordinate.latitude,
+            kArgLongitude: location.coordinate.longitude,
+            kArgAccuracy: location.horizontalAccuracy,
+            kArgAltitude: location.altitude,
+            kArgSpeed: location.speed,
+            kArgSpeedAccuracy: 0.0,
+            kArgHeading: location.course,
+            kArgTime: timeInSeconds * 1000.0,  // in milliseconds since the epoch
+        ]
     }
 
     // MARK: MethodCallHelperDelegate
@@ -204,6 +264,8 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
 
         _locationManager.startUpdatingLocation()
         _locationManager.startMonitoringSignificantLocationChanges()
+        
+        registerActivityRecognition()
     }
 
     func removeLocator() {
@@ -225,6 +287,8 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
 
         let disposePluggable = DisposePluggable()
         disposePluggable.onServiceDispose()
+        
+        unregisterActivityRecognition()
     }
 
     func setServiceRunning(_ value: Bool) {
@@ -237,6 +301,41 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
 
     func isStopWithTerminate() -> Bool {
         return PreferencesManager.isStopWithTerminate()
+    }
+
+    func extractActivityType(a: CMMotionActivity) -> String {
+        var type = "UNKNOWN"
+        switch true {
+            case a.stationary:
+                type = "STILL"
+            case a.walking:
+                type = "WALKING"
+            case a.running:
+                type = "RUNNING"
+            case a.automotive:
+                type = "IN_VEHICLE"
+            case a.cycling:
+                type = "ON_BICYCLE"
+            default:
+                type = "UNKNOWN"
+        }
+        return type
+    }
+
+    func extractActivityConfidence(a: CMMotionActivity) -> String {
+        var conf: String
+
+        switch a.confidence {
+            case CMMotionActivityConfidence.low:
+                conf = "LOW"
+            case CMMotionActivityConfidence.medium:
+                conf = "MEDIUM"
+            case CMMotionActivityConfidence.high:
+                conf = "HIGH"
+            default:
+                conf = "UNKNOWN"
+        }
+        return conf
     }
 }
 
