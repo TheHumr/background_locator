@@ -17,9 +17,10 @@ class LocatorSettings {
   final double distanceFilter;
   final TrackingMode trackingMode;
   final bool chargingModeEnabled;
+  final bool activityRecognitionEnabled;
 
   /// [accuracy] The accuracy of location, Default is max accuracy NAVIGATION.
   ///
   /// [distanceFilter] distance in meter to trigger location update, Default is 0 meter.
-  const LocatorSettings({required this.accuracy, required this.distanceFilter, required this.trackingMode, required this.chargingModeEnabled});
+  const LocatorSettings({required this.accuracy, required this.distanceFilter, required this.trackingMode, required this.chargingModeEnabled, required this.activityRecognitionEnabled});
 }

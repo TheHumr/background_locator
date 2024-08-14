@@ -14,21 +14,22 @@ class IOSSettings extends LocatorSettings {
 
   final bool showsBackgroundLocationIndicator;
   final bool stopWithTerminate;
-  
+
   const IOSSettings({
     LocationAccuracy accuracy = LocationAccuracy.NAVIGATION,
     double distanceFilter = 0,
     TrackingMode trackingMode = TrackingMode.fast,
     this.showsBackgroundLocationIndicator = false,
     this.stopWithTerminate = false,
-  }) : super(accuracy: accuracy, distanceFilter: distanceFilter, trackingMode: trackingMode, chargingModeEnabled: false); //minutes
+    bool activityRecognitionEnabled = false,
+  }) : super(accuracy: accuracy, distanceFilter: distanceFilter, trackingMode: trackingMode, chargingModeEnabled: false, activityRecognitionEnabled: activityRecognitionEnabled); //minutes
 
   Map<String, dynamic> toMap() {
     return {
       Keys.SETTINGS_ACCURACY: accuracy.value,
       Keys.SETTINGS_DISTANCE_FILTER: distanceFilter,
-      Keys.SETTINGS_IOS_SHOWS_BACKGROUND_LOCATION_INDICATOR:
-          showsBackgroundLocationIndicator,
+      Keys.SETTINGS_ACTIVITY_RECOGNITION_ENABLED: activityRecognitionEnabled,
+      Keys.SETTINGS_IOS_SHOWS_BACKGROUND_LOCATION_INDICATOR: showsBackgroundLocationIndicator,
       Keys.SETTINGS_IOS_STOP_WITH_TERMINATE: stopWithTerminate,
     };
   }

@@ -145,6 +145,9 @@ class Keys {
         val SETTINGS_CHARGING_MODE_ENABLED = "settings_chargingModeEnabled"
 
         @JvmStatic
+        val SETTINGS_ACTIVITY_RECOGNITION_ENABLED = "settings_activityRecognitionEnabled"
+
+        @JvmStatic
         val SETTINGS_ANDROID_NOTIFICATION_CHANNEL_NAME = "settings_android_notificationChannelName"
 
         @JvmStatic

@@ -111,6 +111,11 @@ class PreferencesManager {
                     .apply()
 
             sharedPreferences.edit()
+                    .putBoolean(Keys.SETTINGS_ACTIVITY_RECOGNITION_ENABLED,
+                        (settings[Keys.SETTINGS_ACTIVITY_RECOGNITION_ENABLED] as Boolean))
+                    .apply()
+
+            sharedPreferences.edit()
                     .putInt(Keys.SETTINGS_TRACKING_MODE,
                         (settings[Keys.SETTINGS_TRACKING_MODE] as Int))
                     .apply()
@@ -180,6 +185,9 @@ class PreferencesManager {
 
             settings[Keys.SETTINGS_CHARGING_MODE_ENABLED] =
                     sharedPreferences.getBoolean(Keys.SETTINGS_CHARGING_MODE_ENABLED, false)
+
+            settings[Keys.SETTINGS_ACTIVITY_RECOGNITION_ENABLED] =
+                    sharedPreferences.getBoolean(Keys.SETTINGS_ACTIVITY_RECOGNITION_ENABLED, false)
 
             settings[Keys.SETTINGS_TRACKING_MODE] =
                     sharedPreferences.getInt(Keys.SETTINGS_TRACKING_MODE, 0)

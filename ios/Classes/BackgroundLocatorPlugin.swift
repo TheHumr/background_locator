@@ -238,6 +238,7 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
         let distanceFilter = settings.object(forKey: kSettingsDistanceFilter) as! Double
         let showsBackgroundLocationIndicator = settings.object(forKey: kSettingsShowsBackgroundLocationIndicator) as! Bool
         let stopWithTerminate = settings.object(forKey: kSettingsStopWithTerminate) as! Bool
+        let activityRecognitionEnabled = settings.object(forKey: kSettingsActivityRecognitionEnabled) as! Bool
 
         _locationManager.desiredAccuracy = accuracy
         _locationManager.distanceFilter = distanceFilter
@@ -265,7 +266,9 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
         _locationManager.startUpdatingLocation()
         _locationManager.startMonitoringSignificantLocationChanges()
         
-        registerActivityRecognition()
+        if activityRecognitionEnabled {
+            registerActivityRecognition()
+        }
     }
 
     func removeLocator() {

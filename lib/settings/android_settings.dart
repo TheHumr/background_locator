@@ -65,8 +65,9 @@ class AndroidSettings extends LocatorSettings {
       this.wakeLockTime = 60,
       TrackingMode trackingMode = TrackingMode.fast,
       bool chargingModeEnabled = false,
+      bool activityRecognitionEnabled = false,
       this.client = LocationClient.google})
-      : super(accuracy: accuracy, distanceFilter: distanceFilter, trackingMode: trackingMode, chargingModeEnabled: chargingModeEnabled);
+      : super(accuracy: accuracy, distanceFilter: distanceFilter, trackingMode: trackingMode, chargingModeEnabled: chargingModeEnabled, activityRecognitionEnabled: activityRecognitionEnabled);
 
   Map<String, dynamic> toMap() {
     return {
@@ -77,6 +78,7 @@ class AndroidSettings extends LocatorSettings {
       Keys.SETTINGS_DISTANCE_FILTER: distanceFilter,
       Keys.SETTINGS_TRACKING_MODE: trackingMode.id,
       Keys.SETTINGS_CHARGING_MODE_ENABLED: chargingModeEnabled,
+      Keys.SETTINGS_ACTIVITY_RECOGNITION_ENABLED: activityRecognitionEnabled,
       Keys.SETTINGS_ANDROID_WAKE_LOCK_TIME: wakeLockTime,
       Keys.SETTINGS_ANDROID_NOTIFICATION_CHANNEL_NAME:
           androidNotificationSettings.notificationChannelName,

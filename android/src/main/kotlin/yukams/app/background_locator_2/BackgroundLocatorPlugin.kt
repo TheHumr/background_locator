@@ -120,6 +120,7 @@ class BackgroundLocatorPlugin
             intent.putExtra(Keys.SETTINGS_DISTANCE_FILTER, settings[Keys.SETTINGS_DISTANCE_FILTER] as? Double)
             intent.putExtra(Keys.SETTINGS_TRACKING_MODE, settings[Keys.SETTINGS_TRACKING_MODE] as? Int)
             intent.putExtra(Keys.SETTINGS_CHARGING_MODE_ENABLED, settings[Keys.SETTINGS_CHARGING_MODE_ENABLED] as? Boolean)
+            intent.putExtra(Keys.SETTINGS_ACTIVITY_RECOGNITION_ENABLED, settings[Keys.SETTINGS_ACTIVITY_RECOGNITION_ENABLED] as? Boolean)
 
             if (settings.containsKey(Keys.SETTINGS_ANDROID_WAKE_LOCK_TIME)) {
                 intent.putExtra(Keys.SETTINGS_ANDROID_WAKE_LOCK_TIME,

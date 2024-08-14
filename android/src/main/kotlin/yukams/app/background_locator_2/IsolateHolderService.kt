@@ -219,7 +219,11 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
             }
         }
 
-        context?.let { registerActivityRecognition(it) }
+        intent.getBooleanExtra(Keys.SETTINGS_ACTIVITY_RECOGNITION_ENABLED, false).let { enabled ->
+            if (enabled) {
+                context?.let { registerActivityRecognition(it) }
+            }
+        }
 
         // Fill pluggable list
         if (intent.hasExtra(Keys.SETTINGS_INIT_PLUGGABLE)) {
