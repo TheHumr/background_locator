@@ -52,6 +52,11 @@ void callbackDispatcher() {
       final activityRecognitionMode = args[Keys.ARG_ACTIVITY_RECOGNITION_MODE];
       final Function callback = PluginUtilities.getCallbackFromHandle(CallbackHandle.fromRawHandle(args[Keys.ARG_CALLBACK]))!;
       callback({Keys.ARG_ACTIVITY_RECOGNITION_MODE: activityRecognitionMode});
+    } else if (Keys.BCM_IS_LOCATION_TRACKING == call.method) {
+      final Map<dynamic, dynamic> args = call.arguments;
+      final isLocationTracking = args[Keys.ARG_IS_LOCATION_TRACKING];
+      final Function callback = PluginUtilities.getCallbackFromHandle(CallbackHandle.fromRawHandle(args[Keys.ARG_CALLBACK]))!;
+      callback({Keys.ARG_IS_LOCATION_TRACKING: isLocationTracking});
     }
   });
   _backgroundChannel.invokeMethod(Keys.METHOD_SERVICE_INITIALIZED);

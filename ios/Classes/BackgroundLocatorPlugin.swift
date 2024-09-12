@@ -12,6 +12,11 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
     private var _locationManager: CLLocationManager!
     private var _lastLocation: CLLocation!
     private let _activityManager = CMMotionActivityManager()
+    private var isLocationTracking: Bool = false {
+        didSet {
+            sendIsLocationTrackingEvent(value: isLocationTracking)
+        }
+    }
 
     static var registerPlugins: FlutterPluginRegistrantCallback?
     static var instance: BackgroundLocatorPlugin?
@@ -114,16 +119,11 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
 
     // MARK: LocatorPlugin Methods
     func sendLocationEvent(location: NSDictionary!) {
-        let isolateId = _headlessRunner.isolateId
-        if _callbackChannel == nil || isolateId == nil {
-            return
-        }
-
         let map: NSDictionary! = [
             kArgCallback: PreferencesManager.getCallbackHandle(key: kCallbackKey),
             kArgLocation: [location],
         ]
-        _callbackChannel.invokeMethod(kBCMSendLocation, arguments: map)
+        invokeMethod(method: kBCMSendLocation, arguments: map)
     }
 
     init(registrar: FlutterPluginRegistrar) {
@@ -150,9 +150,16 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
 
     // MARK: ActivityManager Methods
     func registerActivityRecognition() {
-        print("registerActivityRecognition")
         _activityManager.startActivityUpdates(to: OperationQueue.init()) { (activity) in
             if let a = activity {
+                
+                if !self.isLocationTracking, a.walking || a.running || a.automotive || a.cycling {
+                    self._locationManager.desiredAccuracy = PreferencesManager.getAccuracy()
+                    self.isLocationTracking = true
+                } else if self.isLocationTracking, a.stationary {
+                    self._locationManager.desiredAccuracy = kCLLocationAccuracyReduced
+                    self.isLocationTracking = false
+                }
                 
                 let data: NSDictionary = [
                     "type": self.extractActivityType(a: a),
@@ -169,11 +176,6 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
     }
     
     func sendActivityRecognitionEvent(data: NSDictionary) {
-        let isolateId = _headlessRunner.isolateId
-        if _callbackChannel == nil || isolateId == nil {
-            return
-        }
-        
         do {
             let jsonData = try JSONSerialization.data(withJSONObject: data)
             let jsonString = String(data: jsonData, encoding: .ascii)
@@ -186,10 +188,18 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
                 kArgCallback: PreferencesManager.getCallbackHandle(key: kCallbackKey),
                 kArgActivityRecognitionMode: jsonString,
             ]
-            _callbackChannel.invokeMethod(kBCMActivityRecognition, arguments: map)
+            invokeMethod(method: kBCMActivityRecognition, arguments: map)
         } catch {
             debugPrint()
         }
+    }
+    
+    func sendIsLocationTrackingEvent(value: Bool) {
+        let map: NSDictionary! = [
+            kArgCallback: PreferencesManager.getCallbackHandle(key: kCallbackKey),
+            kArgIsLocationTracking: value,
+        ]
+        invokeMethod(method: kBCMIsLocationTracking, arguments: map)
     }
     
     func getLocationMap(location: CLLocation) -> NSDictionary {
@@ -251,6 +261,7 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
             _locationManager.allowsBackgroundLocationUpdates = true
         }
 
+        PreferencesManager.saveAccuracy(accuracy: accuracy)
         PreferencesManager.saveDistanceFilter(distance: distanceFilter)
         PreferencesManager.setStopWithTerminate(terminate: stopWithTerminate)
 
@@ -262,6 +273,8 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
 
         let disposePluggable = DisposePluggable()
         disposePluggable.setCallback(callbackHandle: disposeCallback)
+        
+        isLocationTracking = true
 
         _locationManager.startUpdatingLocation()
         _locationManager.startMonitoringSignificantLocationChanges()

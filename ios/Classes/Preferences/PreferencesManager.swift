@@ -23,6 +23,14 @@ class PreferencesManager: NSObject {
     class func setCallbackHandle(handle: Int64, key: String) {
         UserDefaults.standard.set(handle, forKey: key)
     }
+    
+    class func saveAccuracy(accuracy: Double) {
+        UserDefaults.standard.set(accuracy, forKey: kAccuracyKey)
+    }
+
+    class func getAccuracy() -> Double {
+        return UserDefaults.standard.double(forKey: kAccuracyKey)
+    }
 
     class func saveDistanceFilter(distance: Double) {
         UserDefaults.standard.set(distance, forKey: kDistanceFilterKey)
