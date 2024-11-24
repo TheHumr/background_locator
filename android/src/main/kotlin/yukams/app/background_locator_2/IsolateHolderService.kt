@@ -45,10 +45,10 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         private val WAKELOCK_TAG = "IsolateHolderService::WAKE_LOCK"
 
         @JvmStatic
-        private val LOCATION_TRACKING_ACTIVITY_TYPES = listOf("IN_VEHICLE", "ON_BICYCLE", "RUNNING", "WALKING")
+        private val LOCATION_TRACKING_ACTIVITY_TYPES = listOf("IN_VEHICLE", "ON_BICYCLE", "RUNNING", "WALKING", "ON_FOOT", "TILTING")
 
         @JvmStatic
-        private val LOCATION_NON_TRACKING_ACTIVITY_TYPES = listOf("STILL", "ON_FOOT", "TILTING")
+        private val LOCATION_NON_TRACKING_ACTIVITY_TYPES = listOf("STILL")
 
         @JvmStatic
         var backgroundEngine: FlutterEngine? = null
