@@ -122,6 +122,9 @@ class Keys {
         @JvmStatic
         val ARG_ACTIVITY_RECOGNITION_MODE = "activityRecognitionMode"
 
+        @JvmStatic
+        val ARG_IS_LOCATION_TRACKING = "isLocationTracking"
+
 
         @JvmStatic
         val SETTINGS_ACCURACY = "settings_accuracy"
@@ -179,6 +182,9 @@ class Keys {
 
         @JvmStatic
         val BCM_SEND_LOCATION = "BCM_SEND_LOCATION"
+
+        @JvmStatic
+        val BCM_IS_LOCATION_TRACKING = "BCM_IS_LOCATION_TRACKING"
 
         @JvmStatic
         val BCM_NOTIFICATION_CLICK = "BCM_NOTIFICATION_CLICK"

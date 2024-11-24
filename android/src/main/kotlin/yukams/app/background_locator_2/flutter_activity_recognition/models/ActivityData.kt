@@ -4,5 +4,6 @@ import com.google.gson.annotations.SerializedName
 
 data class ActivityData(
 	@SerializedName("type") val type: String,
-	@SerializedName("confidence") val confidence: String
+	@SerializedName("confidence") val confidence: String,
+	@SerializedName("confidenceLevel") val confidenceLevel: Int
 )

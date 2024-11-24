@@ -1,33 +1,34 @@
 package yukams.app.background_locator_2
 
-import android.app.*
 import android.Manifest
+import android.app.*
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
+import android.os.BatteryManager
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.PowerManager
 import android.util.Log
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
-import android.content.pm.PackageManager
-import android.os.BatteryManager
+import com.google.gson.Gson
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+import yukams.app.background_locator_2.flutter_activity_recognition.models.ActivityData
+import yukams.app.background_locator_2.flutter_activity_recognition.service.ActivityRecognitionManager
 import yukams.app.background_locator_2.pluggables.DisposePluggable
 import yukams.app.background_locator_2.pluggables.InitPluggable
 import yukams.app.background_locator_2.pluggables.Pluggable
 import yukams.app.background_locator_2.provider.*
-import java.util.HashMap
-import androidx.core.app.ActivityCompat
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
-import yukams.app.background_locator_2.flutter_activity_recognition.service.ActivityRecognitionManager
 
 class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateListener, Service() {
     companion object {
@@ -44,6 +45,12 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         private val WAKELOCK_TAG = "IsolateHolderService::WAKE_LOCK"
 
         @JvmStatic
+        private val LOCATION_TRACKING_ACTIVITY_TYPES = listOf("IN_VEHICLE", "ON_BICYCLE", "RUNNING", "WALKING")
+
+        @JvmStatic
+        private val LOCATION_NON_TRACKING_ACTIVITY_TYPES = listOf("STILL", "ON_FOOT", "TILTING")
+
+        @JvmStatic
         var backgroundEngine: FlutterEngine? = null
 
         @JvmStatic
@@ -53,7 +60,16 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         var isServiceRunning = false
 
         @JvmStatic
+        var isLocationTracking = false
+
+        @JvmStatic
+        var isCharging = false
+
+        @JvmStatic
         var trackingMode: TrackingMode = TrackingMode.Slow
+
+        @JvmStatic
+        var activityData: ActivityData? = null
 
         @JvmStatic
         var isServiceInitialized = false
@@ -61,12 +77,12 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         fun getBinaryMessenger(context: Context?): BinaryMessenger? {
             val messenger = backgroundEngine?.dartExecutor?.binaryMessenger
             return messenger
-                ?: if (context != null) {
-                    backgroundEngine = FlutterEngine(context)
-                    backgroundEngine?.dartExecutor?.binaryMessenger
-                }else{
-                    messenger
-                }
+                    ?: if (context != null) {
+                        backgroundEngine = FlutterEngine(context)
+                        backgroundEngine?.dartExecutor?.binaryMessenger
+                    } else {
+                        messenger
+                    }
         }
     }
 
@@ -74,7 +90,7 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
     private var notificationTitle = "Start Location Tracking"
     private var notificationMsg = "Track location in background"
     private var notificationBigMsg =
-        "Background location is on to keep the app up-tp-date with your location. This is required for main features to work properly when the app is not running."
+            "Background location is on to keep the app up-tp-date with your location. This is required for main features to work properly when the app is not running."
     private var notificationIconColor = 0
     private var icon = 0
     private var wakeLockTime = 60 * 60 * 1000L // 1 hour default wake lock time
@@ -116,47 +132,46 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // Notification channel is available in Android O and up
             val channel = NotificationChannel(
-                Keys.CHANNEL_ID, notificationChannelName,
-                NotificationManager.IMPORTANCE_LOW
+                    Keys.CHANNEL_ID, notificationChannelName,
+                    NotificationManager.IMPORTANCE_LOW
             )
 
             (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
-                .createNotificationChannel(channel)
+                    .createNotificationChannel(channel)
         }
 
         val intent = Intent(this, getMainActivityClass(this))
         intent.action = Keys.NOTIFICATION_ACTION
 
         val pendingIntent: PendingIntent = PendingIntent.getActivity(
-            this,
-            1, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                this,
+                1, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
         return NotificationCompat.Builder(this, Keys.CHANNEL_ID)
-            .setContentTitle(notificationTitle)
-            .setContentText(notificationMsg)
-            .setStyle(
-                NotificationCompat.BigTextStyle()
-                    .bigText(notificationBigMsg)
-            )
-            .setSmallIcon(icon)
-            .setColor(notificationIconColor)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setContentIntent(pendingIntent)
-            .setOnlyAlertOnce(true) // so when data is updated don't make sound and alert in android 8.0+
-            .setOngoing(true)
-            .build()
+                .setContentTitle(notificationTitle)
+                .setContentText(notificationMsg)
+                .setStyle(
+                        NotificationCompat.BigTextStyle()
+                                .bigText(notificationBigMsg)
+                )
+                .setSmallIcon(icon)
+                .setColor(notificationIconColor)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setContentIntent(pendingIntent)
+                .setOnlyAlertOnce(true) // so when data is updated don't make sound and alert in android 8.0+
+                .setOngoing(true)
+                .build()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.e("IsolateHolderService", "onStartCommand => intent.action : ${intent?.action}")
-        if(intent == null) {
+        if (intent == null) {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 Log.e("IsolateHolderService", "app has crashed, stopping it")
                 stopSelf()
-            }
-            else {
+            } else {
                 return super.onStartCommand(intent, flags, startId)
             }
         }
@@ -166,6 +181,7 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
                 isServiceRunning = false
                 shutdownHolderService()
             }
+
             ACTION_START == intent?.action -> {
                 if (isServiceRunning) {
                     isServiceRunning = false
@@ -177,6 +193,7 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
                     startHolderService(intent)
                 }
             }
+
             ACTION_UPDATE_NOTIFICATION == intent?.action -> {
                 if (isServiceRunning) {
                     updateNotification(intent)
@@ -190,12 +207,12 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
     private fun startHolderService(intent: Intent) {
         Log.e("IsolateHolderService", "startHolderService")
         notificationChannelName =
-            intent.getStringExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_CHANNEL_NAME).toString()
+                intent.getStringExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_CHANNEL_NAME).toString()
         notificationTitle =
-            intent.getStringExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_TITLE).toString()
+                intent.getStringExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_TITLE).toString()
         notificationMsg = intent.getStringExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_MSG).toString()
         notificationBigMsg =
-            intent.getStringExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_BIG_MSG).toString()
+                intent.getStringExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_BIG_MSG).toString()
         val iconNameDefault = "ic_launcher"
         var iconName = intent.getStringExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_ICON)
         if (iconName == null || iconName.isEmpty()) {
@@ -203,13 +220,14 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         }
         icon = resources.getIdentifier(iconName, "mipmap", packageName)
         notificationIconColor =
-            intent.getLongExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_ICON_COLOR, 0).toInt()
+                intent.getLongExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_ICON_COLOR, 0).toInt()
         wakeLockTime = intent.getIntExtra(Keys.SETTINGS_ANDROID_WAKE_LOCK_TIME, 60) * 60 * 1000L
 
         trackingMode = TrackingMode.fromInt(intent.getIntExtra(Keys.SETTINGS_TRACKING_MODE, 0)) ?: TrackingMode.Fast
 
         locatorClient = context?.let { getLocationClient(it) }
-        locatorClient?.requestLocationUpdates(getLocationRequest(trackingMode))
+
+        registerLocationUpdates(trackingMode)
 
         intent.getBooleanExtra(Keys.SETTINGS_CHARGING_MODE_ENABLED, false).let { enabled ->
             if (enabled) {
@@ -251,7 +269,7 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
 
         context?.let { unregisterActivityRecognition(it) }
 
-        locatorClient?.removeLocationUpdates()
+        unregisterLocationUpdates()
         stopForeground(true)
         stopSelf()
 
@@ -264,22 +282,22 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         Log.e("IsolateHolderService", "updateNotification")
         if (intent.hasExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_TITLE)) {
             notificationTitle =
-                intent.getStringExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_TITLE).toString()
+                    intent.getStringExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_TITLE).toString()
         }
 
         if (intent.hasExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_MSG)) {
             notificationMsg =
-                intent.getStringExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_MSG).toString()
+                    intent.getStringExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_MSG).toString()
         }
 
         if (intent.hasExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_BIG_MSG)) {
             notificationBigMsg =
-                intent.getStringExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_BIG_MSG).toString()
+                    intent.getStringExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_BIG_MSG).toString()
         }
 
         val notification = getNotification()
         val notificationManager =
-            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.notify(notificationId, notification)
     }
 
@@ -302,6 +320,7 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
                 Keys.METHOD_SERVICE_INITIALIZED -> {
                     isServiceRunning = true
                 }
+
                 else -> result.notImplemented()
             }
 
@@ -328,7 +347,7 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         try {
             context?.let {
                 FlutterInjector.instance().flutterLoader().ensureInitializationComplete(
-                    it, null
+                        it, null
                 )
             }
 
@@ -338,18 +357,18 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
             // new version of flutter can not invoke method from background thread
             if (locations != null) {
                 val callback =
-                    context?.let {
-                        PreferencesManager.getCallbackHandle(
-                            it,
-                            Keys.CALLBACK_HANDLE_KEY
-                        )
-                    } as Long
+                        context?.let {
+                            PreferencesManager.getCallbackHandle(
+                                    it,
+                                    Keys.CALLBACK_HANDLE_KEY
+                            )
+                        } as Long
 
                 val result: HashMap<Any, Any> =
-                    hashMapOf(
-                        Keys.ARG_CALLBACK to callback,
-                        Keys.ARG_LOCATION to locations
-                    )
+                        hashMapOf(
+                                Keys.ARG_CALLBACK to callback,
+                                Keys.ARG_LOCATION to locations
+                        )
 
                 sendLocationEvent(result)
             }
@@ -369,10 +388,10 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
             val callback = PreferencesManager.getCallbackHandle(it, Keys.CALLBACK_HANDLE_KEY) as Long
 
             val result: HashMap<Any, Any> =
-                hashMapOf(
-                    Keys.ARG_CALLBACK to callback,
-                    Keys.ARG_TRACKING_MODE to trackingMode.value
-                )
+                    hashMapOf(
+                            Keys.ARG_CALLBACK to callback,
+                            Keys.ARG_TRACKING_MODE to trackingMode.value
+                    )
 
             sendTrackingModeEvent(result)
 
@@ -387,15 +406,42 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         invokeBackgroundChannelMethod(Keys.BCM_ACTIVITY_RECOGNITION, result)
     }
 
+    private fun sendIsLocationTrackingEvent(context: Context) {
+        val callback = PreferencesManager.getCallbackHandle(context, Keys.CALLBACK_HANDLE_KEY) as Long
+
+        val map = hashMapOf<Any, Any>(
+                Keys.ARG_CALLBACK to callback,
+                Keys.ARG_IS_LOCATION_TRACKING to isLocationTracking
+        )
+
+        invokeBackgroundChannelMethod(Keys.BCM_IS_LOCATION_TRACKING, map)
+    }
+
+    private fun registerLocationUpdates(trackingMode: TrackingMode) {
+        locatorClient?.requestLocationUpdates(getLocationRequest(trackingMode))
+        isLocationTracking = true
+        context?.let {
+            sendIsLocationTrackingEvent(it)
+        }
+    }
+
+    private fun unregisterLocationUpdates() {
+        locatorClient?.removeLocationUpdates()
+        isLocationTracking = false
+        context?.let {
+            sendIsLocationTrackingEvent(it)
+        }
+    }
+
     private suspend fun registerChargingStateReceiver() {
+        isCharging = false
         chargingStateChangeReceiver = createChargingStateChangeReceiver()
         context?.let {
             it.registerReceiver(chargingStateChangeReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))?.let { intent ->
                 intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1).let { batteryStatus ->
-                    val isChargingMode = batteryStatus == BatteryManager.BATTERY_STATUS_CHARGING || batteryStatus == BatteryManager.BATTERY_STATUS_FULL
-                    val trackingMode = if (isChargingMode || PreferencesManager.getTrackingMode(it) == TrackingMode.Fast) TrackingMode.Fast else TrackingMode.Slow
+                    isCharging = batteryStatus == BatteryManager.BATTERY_STATUS_CHARGING || batteryStatus == BatteryManager.BATTERY_STATUS_FULL
                     delay(2000)
-                    reloadLocationUpdates(it, trackingMode)
+                    reloadLocationUpdates(it)
                 }
             }
         }
@@ -415,10 +461,13 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
             override fun onReceive(context: Context, intent: Intent) {
                 when (intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)) {
                     BatteryManager.BATTERY_STATUS_CHARGING, BatteryManager.BATTERY_STATUS_FULL -> {
-                        reloadLocationUpdates(context, TrackingMode.Fast)
+                        isCharging = true
+                        reloadLocationUpdates(context)
                     }
+
                     BatteryManager.BATTERY_STATUS_DISCHARGING -> {
-                        reloadLocationUpdates(context, PreferencesManager.getTrackingMode(context))
+                        isCharging = false
+                        reloadLocationUpdates(context)
                     }
                 }
             }
@@ -426,6 +475,7 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
     }
 
     private fun registerActivityRecognition(context: Context) {
+        activityData = null
         activityRecognitionManager.startService(
                 context = context,
                 onSuccess = { },
@@ -440,6 +490,16 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
                             Keys.ARG_ACTIVITY_RECOGNITION_MODE to it
                     )
 
+                    activityData = Gson().fromJson(it, ActivityData::class.java)
+
+                    if (isServiceRunning) {
+                        if (!isLocationTracking && isInLocationTrackingActivityType()) {
+                            registerLocationUpdates(trackingMode)
+                        } else if (isLocationTracking && isInNonLocationTrackingActivityType()) {
+                            unregisterLocationUpdates()
+                        }
+                    }
+
                     sendActivityRecognitionEvent(map)
                 }
         )
@@ -449,20 +509,24 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         activityRecognitionManager.stopService(context)
     }
 
-    private fun reloadLocationUpdates(context: Context, trackingMode: TrackingMode) {
+    private fun reloadLocationUpdates(context: Context) {
+        val trackingMode = if (isCharging) TrackingMode.Fast else PreferencesManager.getTrackingMode(context)
         if (IsolateHolderService.trackingMode != trackingMode) {
             IsolateHolderService.trackingMode = trackingMode
             onTrackingModeUpdated(trackingMode)
-
-            locatorClient?.removeLocationUpdates()
-
-            locatorClient?.requestLocationUpdates(
-                getLocationRequest(
-                    trackingMode = trackingMode
-                )
-            )
+            unregisterLocationUpdates()
+            if (isInLocationTrackingActivityType()) {
+                registerLocationUpdates(trackingMode)
+            }
         }
+    }
 
+    private fun isInLocationTrackingActivityType(): Boolean {
+        return activityData?.let { LOCATION_TRACKING_ACTIVITY_TYPES.contains(it.type) } ?: true
+    }
+
+    private fun isInNonLocationTrackingActivityType(): Boolean {
+        return activityData?.let { LOCATION_NON_TRACKING_ACTIVITY_TYPES.contains(it.type) } ?: false
     }
 
     private fun invokeBackgroundChannelMethod(method: String, result: HashMap<Any, Any>) {
@@ -474,14 +538,14 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         if (backgroundEngine != null) {
             context?.let {
                 val backgroundChannel =
-                    MethodChannel(
-                        getBinaryMessenger(it)!!,
-                        Keys.BACKGROUND_CHANNEL_ID
-                    )
+                        MethodChannel(
+                                getBinaryMessenger(it)!!,
+                                Keys.BACKGROUND_CHANNEL_ID
+                        )
                 Handler(it.mainLooper)
-                    .post {
-                        backgroundChannel.invokeMethod(method, result)
-                    }
+                        .post {
+                            backgroundChannel.invokeMethod(method, result)
+                        }
             }
         }
     }

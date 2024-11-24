@@ -71,7 +71,7 @@ class ActivityRecognitionManager: SharedPreferences.OnSharedPreferenceChangeList
 		pendingIntent = getPendingIntentForService(context)
 		serviceClient = ActivityRecognition.getClient(context)
 
-		val task = serviceClient?.requestActivityUpdates(100, pendingIntent!!)
+		val task = serviceClient?.requestActivityUpdates(UPDATES_INTERVAL_MILLIS, pendingIntent!!)
 		task?.addOnSuccessListener { successCallback?.invoke() }
 		task?.addOnFailureListener { errorCallback?.invoke(ErrorCodes.ACTIVITY_UPDATES_REQUEST_FAILED) }
 	}

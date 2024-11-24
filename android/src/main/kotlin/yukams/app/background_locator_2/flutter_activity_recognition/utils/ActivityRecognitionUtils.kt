@@ -10,8 +10,8 @@ class ActivityRecognitionUtils {
 				DetectedActivity.ON_BICYCLE -> "ON_BICYCLE"
 				DetectedActivity.RUNNING -> "RUNNING"
 				DetectedActivity.STILL -> "STILL"
-				DetectedActivity.ON_FOOT,
-				DetectedActivity.TILTING,
+				DetectedActivity.ON_FOOT -> "ON_FOOT"
+				DetectedActivity.TILTING -> "TILTING"
 				DetectedActivity.WALKING -> "WALKING"
 				else -> "UNKNOWN"
 			}
