@@ -61,13 +61,28 @@ class PreferencesManager {
                     .apply()
 
             sharedPreferences.edit()
+                    .putString(Keys.SETTINGS_ANDROID_NOTIFICATION_TITLE_PAUSED,
+                            settings[Keys.SETTINGS_ANDROID_NOTIFICATION_TITLE_PAUSED] as String)
+                    .apply()
+
+            sharedPreferences.edit()
                     .putString(Keys.SETTINGS_ANDROID_NOTIFICATION_MSG,
                             settings[Keys.SETTINGS_ANDROID_NOTIFICATION_MSG] as String)
                     .apply()
 
             sharedPreferences.edit()
+                    .putString(Keys.SETTINGS_ANDROID_NOTIFICATION_MSG_PAUSED,
+                            settings[Keys.SETTINGS_ANDROID_NOTIFICATION_MSG_PAUSED] as String)
+                    .apply()
+
+            sharedPreferences.edit()
                     .putString(Keys.SETTINGS_ANDROID_NOTIFICATION_BIG_MSG,
                             settings[Keys.SETTINGS_ANDROID_NOTIFICATION_BIG_MSG] as String)
+                    .apply()
+
+            sharedPreferences.edit()
+                    .putString(Keys.SETTINGS_ANDROID_NOTIFICATION_BIG_MSG_PAUSED,
+                            settings[Keys.SETTINGS_ANDROID_NOTIFICATION_BIG_MSG_PAUSED] as String)
                     .apply()
 
             sharedPreferences.edit()
@@ -156,11 +171,20 @@ class PreferencesManager {
             settings[Keys.SETTINGS_ANDROID_NOTIFICATION_TITLE] =
                     sharedPreferences.getString(Keys.SETTINGS_ANDROID_NOTIFICATION_TITLE, "")
 
+            settings[Keys.SETTINGS_ANDROID_NOTIFICATION_TITLE_PAUSED] =
+                    sharedPreferences.getString(Keys.SETTINGS_ANDROID_NOTIFICATION_TITLE_PAUSED, "")
+
             settings[Keys.SETTINGS_ANDROID_NOTIFICATION_MSG] =
                     sharedPreferences.getString(Keys.SETTINGS_ANDROID_NOTIFICATION_MSG, "")
 
+            settings[Keys.SETTINGS_ANDROID_NOTIFICATION_MSG_PAUSED] =
+                    sharedPreferences.getString(Keys.SETTINGS_ANDROID_NOTIFICATION_MSG_PAUSED, "")
+
             settings[Keys.SETTINGS_ANDROID_NOTIFICATION_BIG_MSG] =
                     sharedPreferences.getString(Keys.SETTINGS_ANDROID_NOTIFICATION_BIG_MSG, "")
+
+            settings[Keys.SETTINGS_ANDROID_NOTIFICATION_BIG_MSG_PAUSED] =
+                    sharedPreferences.getString(Keys.SETTINGS_ANDROID_NOTIFICATION_BIG_MSG_PAUSED, "")
 
             settings[Keys.SETTINGS_ANDROID_NOTIFICATION_ICON] =
                     sharedPreferences.getString(Keys.SETTINGS_ANDROID_NOTIFICATION_ICON, "")

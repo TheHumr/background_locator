@@ -8,8 +8,11 @@ enum LocationClient { google, android }
 class AndroidNotificationSettings {
   final String notificationChannelName;
   final String notificationTitle;
+  final String notificationTitlePaused;
   final String notificationMsg;
+  final String notificationMsgPaused;
   final String notificationBigMsg;
+  final String notificationBigMsgPaused;
   final String notificationIcon;
   final Color notificationIconColor;
   final VoidCallback? notificationTapCallback;
@@ -30,8 +33,12 @@ class AndroidNotificationSettings {
   const AndroidNotificationSettings(
       {this.notificationChannelName = 'Location tracking',
       this.notificationTitle = 'Start Location Tracking',
+      this.notificationTitlePaused = 'Start Location Tracking',
       this.notificationMsg = 'Track location in background',
+      this.notificationMsgPaused = 'Track location in background',
       this.notificationBigMsg =
+          'Background location is on to keep the app up-tp-date with your location. This is required for main features to work properly when the app is not running.',
+      this.notificationBigMsgPaused =
           'Background location is on to keep the app up-tp-date with your location. This is required for main features to work properly when the app is not running.',
       this.notificationIcon = '',
       this.notificationIconColor = Colors.grey,
@@ -84,10 +91,16 @@ class AndroidSettings extends LocatorSettings {
           androidNotificationSettings.notificationChannelName,
       Keys.SETTINGS_ANDROID_NOTIFICATION_TITLE:
           androidNotificationSettings.notificationTitle,
+      Keys.SETTINGS_ANDROID_NOTIFICATION_TITLE_PAUSED:
+          androidNotificationSettings.notificationTitlePaused,
       Keys.SETTINGS_ANDROID_NOTIFICATION_MSG:
           androidNotificationSettings.notificationMsg,
+      Keys.SETTINGS_ANDROID_NOTIFICATION_MSG_PAUSED:
+          androidNotificationSettings.notificationMsgPaused,
       Keys.SETTINGS_ANDROID_NOTIFICATION_BIG_MSG:
           androidNotificationSettings.notificationBigMsg,
+      Keys.SETTINGS_ANDROID_NOTIFICATION_BIG_MSG_PAUSED:
+          androidNotificationSettings.notificationBigMsgPaused,
       Keys.SETTINGS_ANDROID_NOTIFICATION_ICON:
           androidNotificationSettings.notificationIcon,
       Keys.SETTINGS_ANDROID_NOTIFICATION_ICON_COLOR:

@@ -53,10 +53,16 @@ class Keys {
       'settings_android_notificationChannelName';
   static const String SETTINGS_ANDROID_NOTIFICATION_TITLE =
       'settings_android_notificationTitle';
+  static const String SETTINGS_ANDROID_NOTIFICATION_TITLE_PAUSED =
+      'settings_android_notificationTitlePaused';
   static const String SETTINGS_ANDROID_NOTIFICATION_MSG =
       'settings_android_notificationMsg';
+  static const String SETTINGS_ANDROID_NOTIFICATION_MSG_PAUSED =
+      'settings_android_notificationMsgPaused';
   static const String SETTINGS_ANDROID_NOTIFICATION_BIG_MSG =
       'settings_android_notificationBigMsg';
+  static const String SETTINGS_ANDROID_NOTIFICATION_BIG_MSG_PAUSED =
+      'settings_android_notificationBigMsgPaused';
   static const String SETTINGS_ANDROID_NOTIFICATION_ICON =
       'settings_android_notificationIcon';
   static const String SETTINGS_ANDROID_NOTIFICATION_ICON_COLOR =

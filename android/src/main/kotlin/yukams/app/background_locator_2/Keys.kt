@@ -157,10 +157,19 @@ class Keys {
         val SETTINGS_ANDROID_NOTIFICATION_TITLE = "settings_android_notificationTitle"
 
         @JvmStatic
+        val SETTINGS_ANDROID_NOTIFICATION_TITLE_PAUSED = "settings_android_notificationTitlePaused"
+
+        @JvmStatic
         val SETTINGS_ANDROID_NOTIFICATION_MSG = "settings_android_notificationMsg"
 
         @JvmStatic
+        val SETTINGS_ANDROID_NOTIFICATION_MSG_PAUSED = "settings_android_notificationMsgPaused"
+
+        @JvmStatic
         val SETTINGS_ANDROID_NOTIFICATION_BIG_MSG = "settings_android_notificationBigMsg"
+
+        @JvmStatic
+        val SETTINGS_ANDROID_NOTIFICATION_BIG_MSG_PAUSED = "settings_android_notificationBigMsgPaused"
 
         @JvmStatic
         val SETTINGS_ANDROID_NOTIFICATION_ICON = "settings_android_notificationIcon"

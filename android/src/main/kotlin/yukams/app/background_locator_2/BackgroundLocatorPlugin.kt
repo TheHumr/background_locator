@@ -105,10 +105,16 @@ class BackgroundLocatorPlugin
                     settings[Keys.SETTINGS_ANDROID_NOTIFICATION_CHANNEL_NAME] as? String)
             intent.putExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_TITLE,
                     settings[Keys.SETTINGS_ANDROID_NOTIFICATION_TITLE] as? String)
+            intent.putExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_TITLE_PAUSED,
+                    settings[Keys.SETTINGS_ANDROID_NOTIFICATION_TITLE_PAUSED] as? String)
             intent.putExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_MSG,
                     settings[Keys.SETTINGS_ANDROID_NOTIFICATION_MSG] as? String)
+            intent.putExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_MSG_PAUSED,
+                    settings[Keys.SETTINGS_ANDROID_NOTIFICATION_MSG_PAUSED] as? String)
             intent.putExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_BIG_MSG,
                     settings[Keys.SETTINGS_ANDROID_NOTIFICATION_BIG_MSG] as? String)
+            intent.putExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_BIG_MSG_PAUSED,
+                    settings[Keys.SETTINGS_ANDROID_NOTIFICATION_BIG_MSG_PAUSED] as? String)
             intent.putExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_ICON,
                     settings[Keys.SETTINGS_ANDROID_NOTIFICATION_ICON] as? String)
             intent.putExtra(Keys.SETTINGS_ANDROID_NOTIFICATION_ICON_COLOR,
