@@ -504,10 +504,11 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
 
     private fun registerActivityRecognition(context: Context) {
         activityData = ActivityData.unknown()
-        sendActivityRecognitionEvent(context)
         activityRecognitionManager.startService(
                 context = context,
-                onSuccess = { },
+                onSuccess = {
+                    sendActivityRecognitionEvent(context)
+                },
                 onError = {
                     Log.e("ACTIVITY RECOGNITION", it.toString())
                 },
