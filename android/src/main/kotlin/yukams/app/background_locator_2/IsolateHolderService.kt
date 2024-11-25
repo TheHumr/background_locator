@@ -443,22 +443,26 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         invokeBackgroundChannelMethod(Keys.BCM_IS_LOCATION_TRACKING, map)
     }
 
-    private fun registerLocationUpdates(trackingMode: TrackingMode) {
+    private fun registerLocationUpdates(trackingMode: TrackingMode, sendIsLocationTrackingEvent: Boolean = false) {
         locatorClient?.requestLocationUpdates(getLocationRequest(trackingMode))
         isLocationTracking = true
-        context?.let {
-            sendIsLocationTrackingEvent(it)
-        }
         updateNotification()
+        if (sendIsLocationTrackingEvent) {
+            context?.let {
+                sendIsLocationTrackingEvent(it)
+            }
+        }
     }
 
-    private fun unregisterLocationUpdates() {
+    private fun unregisterLocationUpdates(sendIsLocationTrackingEvent: Boolean = false) {
         locatorClient?.removeLocationUpdates()
         isLocationTracking = false
-        context?.let {
-            sendIsLocationTrackingEvent(it)
-        }
         updateNotification()
+        if (sendIsLocationTrackingEvent) {
+            context?.let {
+                sendIsLocationTrackingEvent(it)
+            }
+        }
     }
 
     private suspend fun registerChargingStateReceiver() {
@@ -517,9 +521,9 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
 
                     if (isServiceRunning) {
                         if (!isLocationTracking && isInLocationTrackingActivityType()) {
-                            registerLocationUpdates(trackingMode)
+                            registerLocationUpdates(trackingMode, sendIsLocationTrackingEvent = true)
                         } else if (isLocationTracking && isInNonLocationTrackingActivityType()) {
-                            unregisterLocationUpdates()
+                            unregisterLocationUpdates(sendIsLocationTrackingEvent = true)
                         }
                     }
 
@@ -537,9 +541,9 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         if (IsolateHolderService.trackingMode != trackingMode) {
             IsolateHolderService.trackingMode = trackingMode
             onTrackingModeUpdated(trackingMode)
-            unregisterLocationUpdates()
+            unregisterLocationUpdates(sendIsLocationTrackingEvent = true)
             if (isInLocationTrackingActivityType()) {
-                registerLocationUpdates(trackingMode)
+                registerLocationUpdates(trackingMode, sendIsLocationTrackingEvent = true)
             }
         }
     }
