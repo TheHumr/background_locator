@@ -14,6 +14,9 @@ let kMethodPluginRegisterLocationUpdate: String = "LocatorPlugin.registerLocatio
 let kMethodPluginUnRegisterLocationUpdate: String = "LocatorPlugin.unRegisterLocationUpdate"
 let kMethodPluginIsRegisteredLocationUpdate: String = "LocatorPlugin.isRegisterLocationUpdate"
 let kMethodPluginIsServiceRunning: String = "LocatorPlugin.isServiceRunning"
+let kMethodPluginIsLocationTracking: String = "LocatorPlugin.isLocationTracking"
+let kMethodPluginCurrentTrackingMode: String = "LocatorPlugin.currentTrackingMode"
+let kMethodPluginCurrentActivity: String = "LocatorPlugin.currentActivity"
 let kMethodPluginUpdateNotification: String = "LocatorPlugin.updateNotification"
 
 let kArgLatitude: String = "latitude"

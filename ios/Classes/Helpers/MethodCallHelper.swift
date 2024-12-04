@@ -1,4 +1,5 @@
 import Flutter
+import CoreMotion
 
 class MethodCallHelper: NSObject {
 
@@ -35,6 +36,14 @@ class MethodCallHelper: NSObject {
         } else if kMethodPluginIsServiceRunning == call.method {
             let val = delegate.isServiceRunning()
             result(val)
+        } else if kMethodPluginIsLocationTracking == call.method {
+            let val = delegate.isLocationTracking()
+            result(val)
+        } else if kMethodPluginCurrentTrackingMode == call.method {
+            result(nil)
+        } else if kMethodPluginCurrentActivity == call.method {
+            let val = delegate.currentActivity()?.toJson()
+            result(val)
         } else if kMethodPluginUpdateNotification == call.method {
             // updating notification's text is just for android
             result(nil)
@@ -54,5 +63,7 @@ protocol MethodCallHelperDelegate {
         settings: NSDictionary)
     func removeLocator()
     func isServiceRunning() -> Bool
+    func isLocationTracking() -> Bool
+    func currentActivity() -> CMMotionActivity?
     func setServiceRunning(_ value: Bool)
 }

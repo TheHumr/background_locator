@@ -12,9 +12,10 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
     private var _locationManager: CLLocationManager!
     private var _lastLocation: CLLocation!
     private let _activityManager = CMMotionActivityManager()
-    private var isLocationTracking: Bool = false {
+    private var activity: CMMotionActivity?
+    private var locationTracking: Bool = false {
         didSet {
-            sendIsLocationTrackingEvent(value: isLocationTracking)
+            sendIsLocationTrackingEvent(value: locationTracking)
         }
     }
 
@@ -152,21 +153,17 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
     func registerActivityRecognition() {
         _activityManager.startActivityUpdates(to: OperationQueue.init()) { (activity) in
             if let a = activity {
+                self.activity = activity
                 
-                if !self.isLocationTracking, a.walking || a.running || a.automotive || a.cycling {
+                if !self.locationTracking, a.walking || a.running || a.automotive || a.cycling {
                     self._locationManager.desiredAccuracy = PreferencesManager.getAccuracy()
-                    self.isLocationTracking = true
-                } else if self.isLocationTracking, a.stationary {
+                    self.locationTracking = true
+                } else if self.locationTracking, a.stationary {
                     self._locationManager.desiredAccuracy = kCLLocationAccuracyReduced
-                    self.isLocationTracking = false
+                    self.locationTracking = false
                 }
                 
-                let data: NSDictionary = [
-                    "type": self.extractActivityType(a: a),
-                    "confidence": self.extractActivityConfidence(a: a)
-                ]
-                
-                self.sendActivityRecognitionEvent(data: data)
+                self.sendActivityRecognitionEvent(data: a.toJson())
             }
         }
     }
@@ -274,7 +271,7 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
         let disposePluggable = DisposePluggable()
         disposePluggable.setCallback(callbackHandle: disposeCallback)
         
-        isLocationTracking = true
+        locationTracking = true
 
         _locationManager.startUpdatingLocation()
         _locationManager.startMonitoringSignificantLocationChanges()
@@ -314,9 +311,61 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
     func isServiceRunning() -> Bool {
         return PreferencesManager.isServiceRunning()
     }
+    
+    func isLocationTracking() -> Bool {
+        return locationTracking
+    }
+    
+    func currentActivity() -> CMMotionActivity? {
+        return activity
+    }
 
     func isStopWithTerminate() -> Bool {
         return PreferencesManager.isStopWithTerminate()
+    }
+}
+
+extension DispatchQueue {
+    private static var _onceTracker = [String]()
+
+    public class func once(
+        file: String = #file,
+        function: String = #function,
+        line: Int = #line,
+        block: () -> Void
+    ) {
+        let token = "\(file):\(function):\(line)"
+        once(token: token, block: block)
+    }
+
+    /**
+     Executes a block of code, associated with a unique token, only once.  The code is thread safe and will
+     only execute the code once even in the presence of multithreaded calls.
+
+     - parameter token: A unique reverse DNS style name such as com.vectorform.<name> or a GUID
+     - parameter block: Block to execute once
+     */
+    public class func once(
+        token: String,
+        block: () -> Void
+    ) {
+        objc_sync_enter(self)
+        defer { objc_sync_exit(self) }
+
+        guard !_onceTracker.contains(token) else { return }
+
+        _onceTracker.append(token)
+        block()
+    }
+}
+
+extension CMMotionActivity {
+    
+    public func toJson() -> NSDictionary {
+        return [
+            "type": extractActivityType(a: self),
+            "confidence": extractActivityConfidence(a: self)
+        ]
     }
 
     func extractActivityType(a: CMMotionActivity) -> String {
@@ -352,39 +401,5 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
                 conf = "UNKNOWN"
         }
         return conf
-    }
-}
-
-extension DispatchQueue {
-    private static var _onceTracker = [String]()
-
-    public class func once(
-        file: String = #file,
-        function: String = #function,
-        line: Int = #line,
-        block: () -> Void
-    ) {
-        let token = "\(file):\(function):\(line)"
-        once(token: token, block: block)
-    }
-
-    /**
-     Executes a block of code, associated with a unique token, only once.  The code is thread safe and will
-     only execute the code once even in the presence of multithreaded calls.
-
-     - parameter token: A unique reverse DNS style name such as com.vectorform.<name> or a GUID
-     - parameter block: Block to execute once
-     */
-    public class func once(
-        token: String,
-        block: () -> Void
-    ) {
-        objc_sync_enter(self)
-        defer { objc_sync_exit(self) }
-
-        guard !_onceTracker.contains(token) else { return }
-
-        _onceTracker.append(token)
-        block()
     }
 }
