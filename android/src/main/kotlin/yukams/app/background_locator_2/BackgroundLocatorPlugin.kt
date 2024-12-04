@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.Handler
 import android.util.Log
 import androidx.core.content.ContextCompat
+import com.google.gson.Gson
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -180,6 +181,21 @@ class BackgroundLocatorPlugin
         }
 
         @JvmStatic
+        private fun isLocationTracking(result: MethodChannel.Result?) {
+            result?.success(IsolateHolderService.isLocationTracking)
+        }
+
+        @JvmStatic
+        private fun currentTrackingMode(result: MethodChannel.Result?) {
+            result?.success(IsolateHolderService.trackingMode.value)
+        }
+
+        @JvmStatic
+        private fun currentActivity(result: MethodChannel.Result?) {
+            result?.success(Gson().toJson(IsolateHolderService.activityData))
+        }
+
+        @JvmStatic
         private fun updateNotificationText(context: Context, args: Map<Any, Any>) {
             val intent = Intent(context, IsolateHolderService::class.java)
             intent.action = IsolateHolderService.ACTION_UPDATE_NOTIFICATION
@@ -260,6 +276,9 @@ class BackgroundLocatorPlugin
             }
             Keys.METHOD_PLUGIN_IS_REGISTER_LOCATION_UPDATE -> isServiceRunning(result)
             Keys.METHOD_PLUGIN_IS_SERVICE_RUNNING -> isServiceRunning(result)
+            Keys.METHOD_PLUGIN_IS_LOCATION_TRACKING -> isLocationTracking(result)
+            Keys.METHOD_PLUGIN_CURRENT_TRACKING_MODE -> currentTrackingMode(result)
+            Keys.METHOD_PLUGIN_CURRENT_ACTIVITY -> currentActivity(result)
             Keys.METHOD_PLUGIN_UPDATE_NOTIFICATION -> {
                 if (!IsolateHolderService.isServiceRunning) {
                     return

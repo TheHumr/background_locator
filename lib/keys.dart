@@ -14,6 +14,12 @@ class Keys {
       'LocatorPlugin.isRegisterLocationUpdate';
   static const String METHOD_PLUGIN_IS_SERVICE_RUNNING =
       'LocatorPlugin.isServiceRunning';
+  static const String METHOD_PLUGIN_IS_LOCATION_TRACKING =
+      'LocatorPlugin.isLocationTracking';
+  static const String METHOD_PLUGIN_CURRENT_TRACKING_MODE =
+      'LocatorPlugin.currentTrackingMode';
+  static const String METHOD_PLUGIN_CURRENT_ACTIVITY =
+      'LocatorPlugin.currentActivity';
   static const String METHOD_PLUGIN_UPDATE_NOTIFICATION =
       'LocatorPlugin.updateNotification';
 

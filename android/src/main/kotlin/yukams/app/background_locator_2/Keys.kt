@@ -51,6 +51,15 @@ class Keys {
         val METHOD_PLUGIN_IS_SERVICE_RUNNING = "LocatorPlugin.isServiceRunning"
 
         @JvmStatic
+        val METHOD_PLUGIN_IS_LOCATION_TRACKING = "LocatorPlugin.isLocationTracking"
+
+        @JvmStatic
+        val METHOD_PLUGIN_CURRENT_TRACKING_MODE = "LocatorPlugin.currentTrackingMode"
+
+        @JvmStatic
+        val METHOD_PLUGIN_CURRENT_ACTIVITY = "LocatorPlugin.currentActivity"
+
+        @JvmStatic
         val METHOD_PLUGIN_UPDATE_NOTIFICATION = "LocatorPlugin.updateNotification"
 
         @JvmStatic

@@ -1,12 +1,12 @@
-enum TrackingMode { slow, fast }
+enum TrackingMode {
+  slow(0),
+  fast(1);
 
-extension TrackingModeExtension on TrackingMode {
-  int get id {
-    switch (this) {
-      case TrackingMode.slow:
-        return 0;
-      case TrackingMode.fast:
-        return 1;
-    }
+  final int id;
+
+  const TrackingMode(this.id);
+
+  static TrackingMode? getById(int id) {
+    return TrackingMode.values.firstWhere((e) => e.id == id);
   }
 }
