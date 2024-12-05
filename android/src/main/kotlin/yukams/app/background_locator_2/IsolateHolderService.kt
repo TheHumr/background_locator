@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.content.pm.ServiceInfo
 import android.os.BatteryManager
 import android.os.Build
 import android.os.Handler
@@ -15,7 +16,6 @@ import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
-import com.google.gson.Gson
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.BinaryMessenger
@@ -23,6 +23,8 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import yukams.app.background_locator_2.flutter_activity_recognition.models.ActivityData
 import yukams.app.background_locator_2.flutter_activity_recognition.service.ActivityRecognitionManager
 import yukams.app.background_locator_2.pluggables.DisposePluggable
@@ -112,7 +114,7 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
     override fun onCreate() {
         super.onCreate()
         startLocatorService(this)
-        startForeground(notificationId, getNotification())
+        startServiceForeground()
     }
 
     private fun start() {
@@ -123,15 +125,10 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
             }
         }
 
-        // Starting Service as foreground with a notification prevent service from closing
-        val notification = getNotification()
-        startForeground(notificationId, notification)
+        startServiceForeground()
 
-        runBlocking {
-            delay(1000)
-            pluggables.forEach {
-                context?.let { it1 -> it.onServiceStart(it1) }
-            }
+        pluggables.forEach {
+            context?.let { it1 -> it.onServiceStart(it1) }
         }
     }
 
@@ -173,6 +170,15 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
                 .setOnlyAlertOnce(true) // so when data is updated don't make sound and alert in android 8.0+
                 .setOngoing(true)
                 .build()
+    }
+
+    private fun startServiceForeground() {
+        val notification = getNotification()
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            startForeground(notificationId, notification)
+        } else {
+            startForeground(notificationId, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION)
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -429,7 +435,7 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
 
         val map = hashMapOf<Any, Any>(
                 Keys.ARG_CALLBACK to callback,
-                Keys.ARG_ACTIVITY_RECOGNITION_MODE to Gson().toJson(activityData)
+                Keys.ARG_ACTIVITY_RECOGNITION_MODE to Json.encodeToString(activityData)
         )
 
         invokeBackgroundChannelMethod(Keys.BCM_ACTIVITY_RECOGNITION, map)
@@ -520,7 +526,7 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
                     Log.e("ACTIVITY RECOGNITION", it.toString())
                 },
                 updatesListener = {
-                    activityData = Gson().fromJson(it, ActivityData::class.java)
+                    activityData = Json.decodeFromString<ActivityData>(it)
 
                     if (isServiceRunning) {
                         if (!isLocationTracking && isInLocationTrackingActivityType()) {

@@ -10,7 +10,6 @@ import android.os.Build
 import android.os.Handler
 import android.util.Log
 import androidx.core.content.ContextCompat
-import com.google.gson.Gson
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -19,6 +18,8 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.PluginRegistry
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import yukams.app.background_locator_2.pluggables.DisposePluggable
 import yukams.app.background_locator_2.pluggables.InitPluggable
 
@@ -192,7 +193,7 @@ class BackgroundLocatorPlugin
 
         @JvmStatic
         private fun currentActivity(result: MethodChannel.Result?) {
-            result?.success(Gson().toJson(IsolateHolderService.activityData))
+            result?.success(Json.encodeToString(IsolateHolderService.activityData))
         }
 
         @JvmStatic

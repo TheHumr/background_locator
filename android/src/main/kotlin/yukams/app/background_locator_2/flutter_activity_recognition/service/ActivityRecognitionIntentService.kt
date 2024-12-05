@@ -6,6 +6,8 @@ import android.util.Log
 import androidx.core.app.JobIntentService
 import com.google.android.gms.location.ActivityRecognitionResult
 import com.google.gson.Gson
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import yukams.app.background_locator_2.flutter_activity_recognition.Constants
 import yukams.app.background_locator_2.flutter_activity_recognition.errors.ErrorCodes
 import yukams.app.background_locator_2.flutter_activity_recognition.models.ActivityData
@@ -13,7 +15,6 @@ import yukams.app.background_locator_2.flutter_activity_recognition.utils.Activi
 
 class ActivityRecognitionIntentService : JobIntentService() {
     companion object {
-        val jsonConverter: Gson = Gson()
         fun enqueueWork(context: Context, intent: Intent) {
             enqueueWork(context, ActivityRecognitionIntentService::class.java,
                     Constants.ACTIVITY_RECOGNITION_INTENT_SERVICE_JOB_ID, intent)
@@ -37,7 +38,7 @@ class ActivityRecognitionIntentService : JobIntentService() {
         var prefsValue: String
         try {
             prefsKey = Constants.ACTIVITY_DATA_PREFS_KEY
-            prefsValue = jsonConverter.toJson(activityData)
+            prefsValue = Json.encodeToString(activityData)
         } catch (e: Exception) {
             prefsKey = Constants.ACTIVITY_ERROR_PREFS_KEY
             prefsValue = ErrorCodes.ACTIVITY_DATA_ENCODING_FAILED.toString()
