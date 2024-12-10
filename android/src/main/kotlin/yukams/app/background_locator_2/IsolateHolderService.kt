@@ -528,6 +528,8 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
                 updatesListener = {
                     activityData = Json.decodeFromString<ActivityData>(it)
 
+                    sendActivityRecognitionEvent(context)
+
                     if (isServiceRunning) {
                         if (!isLocationTracking && isInLocationTrackingActivityType()) {
                             registerLocationUpdates(trackingMode, sendIsLocationTrackingEvent = true)
@@ -535,8 +537,6 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
                             unregisterLocationUpdates(sendIsLocationTrackingEvent = true)
                         }
                     }
-
-                    sendActivityRecognitionEvent(context)
                 }
         )
     }

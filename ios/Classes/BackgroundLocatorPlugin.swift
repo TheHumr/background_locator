@@ -155,6 +155,8 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
             if let a = activity {
                 self.activity = activity
                 
+                self.sendActivityRecognitionEvent(data: a.toJson())
+                
                 if !self.locationTracking, a.walking || a.running || a.automotive || a.cycling {
                     self._locationManager.desiredAccuracy = PreferencesManager.getAccuracy()
                     self.locationTracking = true
@@ -162,8 +164,6 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
                     self._locationManager.desiredAccuracy = kCLLocationAccuracyReduced
                     self.locationTracking = false
                 }
-                
-                self.sendActivityRecognitionEvent(data: a.toJson())
             }
         }
     }
