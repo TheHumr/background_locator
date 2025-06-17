@@ -32,14 +32,12 @@ class AndroidNotificationSettings {
   ///
   const AndroidNotificationSettings(
       {this.notificationChannelName = 'Location tracking',
-      this.notificationTitle = 'Start Location Tracking',
-      this.notificationTitlePaused = 'Start Location Tracking',
-      this.notificationMsg = 'Track location in background',
-      this.notificationMsgPaused = 'Track location in background',
-      this.notificationBigMsg =
-          'Background location is on to keep the app up-tp-date with your location. This is required for main features to work properly when the app is not running.',
-      this.notificationBigMsgPaused =
-          'Background location is on to keep the app up-tp-date with your location. This is required for main features to work properly when the app is not running.',
+      this.notificationTitle = '',
+      this.notificationTitlePaused = '',
+      this.notificationMsg = '',
+      this.notificationMsgPaused = '',
+      this.notificationBigMsg = '',
+      this.notificationBigMsgPaused = '',
       this.notificationIcon = '',
       this.notificationIconColor = Colors.grey,
       this.notificationTapCallback});
