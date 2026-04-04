@@ -21,6 +21,7 @@ import io.flutter.plugin.common.PluginRegistry
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import yukams.app.background_locator_2.pluggables.DisposePluggable
+import java.util.ArrayList
 import yukams.app.background_locator_2.pluggables.InitPluggable
 
 class BackgroundLocatorPlugin
@@ -129,6 +130,10 @@ class BackgroundLocatorPlugin
             intent.putExtra(Keys.SETTINGS_TRACKING_MODE, settings[Keys.SETTINGS_TRACKING_MODE] as? Int)
             intent.putExtra(Keys.SETTINGS_CHARGING_MODE_ENABLED, settings[Keys.SETTINGS_CHARGING_MODE_ENABLED] as? Boolean)
             intent.putExtra(Keys.SETTINGS_ACTIVITY_RECOGNITION_ENABLED, settings[Keys.SETTINGS_ACTIVITY_RECOGNITION_ENABLED] as? Boolean)
+            intent.putStringArrayListExtra(
+                Keys.SETTINGS_LOCATION_TRACKING_ACTIVITY_TYPES,
+                ArrayList((settings[Keys.SETTINGS_LOCATION_TRACKING_ACTIVITY_TYPES] as? List<*>)?.filterIsInstance<String>() ?: emptyList())
+            )
 
             if (settings.containsKey(Keys.SETTINGS_ANDROID_WAKE_LOCK_TIME)) {
                 intent.putExtra(Keys.SETTINGS_ANDROID_WAKE_LOCK_TIME,

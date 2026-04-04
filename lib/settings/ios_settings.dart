@@ -22,13 +22,22 @@ class IOSSettings extends LocatorSettings {
     this.showsBackgroundLocationIndicator = false,
     this.stopWithTerminate = false,
     bool activityRecognitionEnabled = false,
-  }) : super(accuracy: accuracy, distanceFilter: distanceFilter, trackingMode: trackingMode, chargingModeEnabled: false, activityRecognitionEnabled: activityRecognitionEnabled); //minutes
+    List<String> locationTrackingActivityTypes = defaultLocationTrackingActivityTypes,
+  }) : super(
+          accuracy: accuracy,
+          distanceFilter: distanceFilter,
+          trackingMode: trackingMode,
+          chargingModeEnabled: false,
+          activityRecognitionEnabled: activityRecognitionEnabled,
+          locationTrackingActivityTypes: locationTrackingActivityTypes,
+        ); //minutes
 
   Map<String, dynamic> toMap() {
     return {
       Keys.SETTINGS_ACCURACY: accuracy.value,
       Keys.SETTINGS_DISTANCE_FILTER: distanceFilter,
       Keys.SETTINGS_ACTIVITY_RECOGNITION_ENABLED: activityRecognitionEnabled,
+      Keys.SETTINGS_LOCATION_TRACKING_ACTIVITY_TYPES: locationTrackingActivityTypes,
       Keys.SETTINGS_IOS_SHOWS_BACKGROUND_LOCATION_INDICATOR: showsBackgroundLocationIndicator,
       Keys.SETTINGS_IOS_STOP_WITH_TERMINATE: stopWithTerminate,
     };

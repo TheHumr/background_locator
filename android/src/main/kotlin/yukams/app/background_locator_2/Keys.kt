@@ -157,6 +157,9 @@ class Keys {
         val SETTINGS_CHARGING_MODE_ENABLED = "settings_chargingModeEnabled"
 
         @JvmStatic
+        val SETTINGS_LOCATION_TRACKING_ACTIVITY_TYPES = "settings_locationTrackingActivityTypes"
+
+        @JvmStatic
         val SETTINGS_ACTIVITY_RECOGNITION_ENABLED = "settings_activityRecognitionEnabled"
 
         @JvmStatic

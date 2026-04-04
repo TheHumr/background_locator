@@ -71,8 +71,16 @@ class AndroidSettings extends LocatorSettings {
       TrackingMode trackingMode = TrackingMode.fast,
       bool chargingModeEnabled = false,
       bool activityRecognitionEnabled = false,
+      List<String> locationTrackingActivityTypes = defaultLocationTrackingActivityTypes,
       this.client = LocationClient.google})
-      : super(accuracy: accuracy, distanceFilter: distanceFilter, trackingMode: trackingMode, chargingModeEnabled: chargingModeEnabled, activityRecognitionEnabled: activityRecognitionEnabled);
+      : super(
+          accuracy: accuracy,
+          distanceFilter: distanceFilter,
+          trackingMode: trackingMode,
+          chargingModeEnabled: chargingModeEnabled,
+          activityRecognitionEnabled: activityRecognitionEnabled,
+          locationTrackingActivityTypes: locationTrackingActivityTypes,
+        );
 
   Map<String, dynamic> toMap() {
     return {
@@ -84,25 +92,17 @@ class AndroidSettings extends LocatorSettings {
       Keys.SETTINGS_TRACKING_MODE: trackingMode.id,
       Keys.SETTINGS_CHARGING_MODE_ENABLED: chargingModeEnabled,
       Keys.SETTINGS_ACTIVITY_RECOGNITION_ENABLED: activityRecognitionEnabled,
+      Keys.SETTINGS_LOCATION_TRACKING_ACTIVITY_TYPES: locationTrackingActivityTypes,
       Keys.SETTINGS_ANDROID_WAKE_LOCK_TIME: wakeLockTime,
-      Keys.SETTINGS_ANDROID_NOTIFICATION_CHANNEL_NAME:
-          androidNotificationSettings.notificationChannelName,
-      Keys.SETTINGS_ANDROID_NOTIFICATION_TITLE:
-          androidNotificationSettings.notificationTitle,
-      Keys.SETTINGS_ANDROID_NOTIFICATION_TITLE_PAUSED:
-          androidNotificationSettings.notificationTitlePaused,
-      Keys.SETTINGS_ANDROID_NOTIFICATION_MSG:
-          androidNotificationSettings.notificationMsg,
-      Keys.SETTINGS_ANDROID_NOTIFICATION_MSG_PAUSED:
-          androidNotificationSettings.notificationMsgPaused,
-      Keys.SETTINGS_ANDROID_NOTIFICATION_BIG_MSG:
-          androidNotificationSettings.notificationBigMsg,
-      Keys.SETTINGS_ANDROID_NOTIFICATION_BIG_MSG_PAUSED:
-          androidNotificationSettings.notificationBigMsgPaused,
-      Keys.SETTINGS_ANDROID_NOTIFICATION_ICON:
-          androidNotificationSettings.notificationIcon,
-      Keys.SETTINGS_ANDROID_NOTIFICATION_ICON_COLOR:
-          androidNotificationSettings.notificationIconColor.value,
+      Keys.SETTINGS_ANDROID_NOTIFICATION_CHANNEL_NAME: androidNotificationSettings.notificationChannelName,
+      Keys.SETTINGS_ANDROID_NOTIFICATION_TITLE: androidNotificationSettings.notificationTitle,
+      Keys.SETTINGS_ANDROID_NOTIFICATION_TITLE_PAUSED: androidNotificationSettings.notificationTitlePaused,
+      Keys.SETTINGS_ANDROID_NOTIFICATION_MSG: androidNotificationSettings.notificationMsg,
+      Keys.SETTINGS_ANDROID_NOTIFICATION_MSG_PAUSED: androidNotificationSettings.notificationMsgPaused,
+      Keys.SETTINGS_ANDROID_NOTIFICATION_BIG_MSG: androidNotificationSettings.notificationBigMsg,
+      Keys.SETTINGS_ANDROID_NOTIFICATION_BIG_MSG_PAUSED: androidNotificationSettings.notificationBigMsgPaused,
+      Keys.SETTINGS_ANDROID_NOTIFICATION_ICON: androidNotificationSettings.notificationIcon,
+      Keys.SETTINGS_ANDROID_NOTIFICATION_ICON_COLOR: androidNotificationSettings.notificationIconColor.value,
       Keys.SETTINGS_ANDROID_LOCATION_CLIENT: client.index
     };
   }

@@ -1,27 +1,17 @@
 class Keys {
   static const String CHANNEL_ID = 'app.yukams/locator_plugin';
-  static const String BACKGROUND_CHANNEL_ID =
-      'app.yukams/locator_plugin_background';
+  static const String BACKGROUND_CHANNEL_ID = 'app.yukams/locator_plugin_background';
 
   static const String METHOD_SERVICE_INITIALIZED = 'LocatorService.initialized';
-  static const String METHOD_PLUGIN_INITIALIZE_SERVICE =
-      'LocatorPlugin.initializeService';
-  static const String METHOD_PLUGIN_REGISTER_LOCATION_UPDATE =
-      'LocatorPlugin.registerLocationUpdate';
-  static const String METHOD_PLUGIN_UN_REGISTER_LOCATION_UPDATE =
-      'LocatorPlugin.unRegisterLocationUpdate';
-  static const String METHOD_PLUGIN_IS_REGISTER_LOCATION_UPDATE =
-      'LocatorPlugin.isRegisterLocationUpdate';
-  static const String METHOD_PLUGIN_IS_SERVICE_RUNNING =
-      'LocatorPlugin.isServiceRunning';
-  static const String METHOD_PLUGIN_IS_LOCATION_TRACKING =
-      'LocatorPlugin.isLocationTracking';
-  static const String METHOD_PLUGIN_CURRENT_TRACKING_MODE =
-      'LocatorPlugin.currentTrackingMode';
-  static const String METHOD_PLUGIN_CURRENT_ACTIVITY =
-      'LocatorPlugin.currentActivity';
-  static const String METHOD_PLUGIN_UPDATE_NOTIFICATION =
-      'LocatorPlugin.updateNotification';
+  static const String METHOD_PLUGIN_INITIALIZE_SERVICE = 'LocatorPlugin.initializeService';
+  static const String METHOD_PLUGIN_REGISTER_LOCATION_UPDATE = 'LocatorPlugin.registerLocationUpdate';
+  static const String METHOD_PLUGIN_UN_REGISTER_LOCATION_UPDATE = 'LocatorPlugin.unRegisterLocationUpdate';
+  static const String METHOD_PLUGIN_IS_REGISTER_LOCATION_UPDATE = 'LocatorPlugin.isRegisterLocationUpdate';
+  static const String METHOD_PLUGIN_IS_SERVICE_RUNNING = 'LocatorPlugin.isServiceRunning';
+  static const String METHOD_PLUGIN_IS_LOCATION_TRACKING = 'LocatorPlugin.isLocationTracking';
+  static const String METHOD_PLUGIN_CURRENT_TRACKING_MODE = 'LocatorPlugin.currentTrackingMode';
+  static const String METHOD_PLUGIN_CURRENT_ACTIVITY = 'LocatorPlugin.currentActivity';
+  static const String METHOD_PLUGIN_UPDATE_NOTIFICATION = 'LocatorPlugin.updateNotification';
 
   static const String ARG_IS_MOCKED = 'is_mocked';
   static const String ARG_IS_CHARGING = 'is_charging';
@@ -53,35 +43,23 @@ class Keys {
   static const String SETTINGS_DISTANCE_FILTER = 'settings_distanceFilter';
   static const String SETTINGS_ACTIVITY_RECOGNITION_ENABLED = 'settings_activityRecognitionEnabled';
   static const String SETTINGS_TRACKING_MODE = 'settings_tracking_mode';
+  static const String SETTINGS_LOCATION_TRACKING_ACTIVITY_TYPES = 'settings_locationTrackingActivityTypes';
   static const String SETTINGS_CHARGING_MODE_ENABLED = 'settings_chargingModeEnabled';
   static const String SETTINGS_AUTO_STOP = 'settings_autoStop';
-  static const String SETTINGS_ANDROID_NOTIFICATION_CHANNEL_NAME =
-      'settings_android_notificationChannelName';
-  static const String SETTINGS_ANDROID_NOTIFICATION_TITLE =
-      'settings_android_notificationTitle';
-  static const String SETTINGS_ANDROID_NOTIFICATION_TITLE_PAUSED =
-      'settings_android_notificationTitlePaused';
-  static const String SETTINGS_ANDROID_NOTIFICATION_MSG =
-      'settings_android_notificationMsg';
-  static const String SETTINGS_ANDROID_NOTIFICATION_MSG_PAUSED =
-      'settings_android_notificationMsgPaused';
-  static const String SETTINGS_ANDROID_NOTIFICATION_BIG_MSG =
-      'settings_android_notificationBigMsg';
-  static const String SETTINGS_ANDROID_NOTIFICATION_BIG_MSG_PAUSED =
-      'settings_android_notificationBigMsgPaused';
-  static const String SETTINGS_ANDROID_NOTIFICATION_ICON =
-      'settings_android_notificationIcon';
-  static const String SETTINGS_ANDROID_NOTIFICATION_ICON_COLOR =
-      'settings_android_notificationIconColor';
-  static const String SETTINGS_ANDROID_WAKE_LOCK_TIME =
-      'settings_android_wakeLockTime';
-  static const String SETTINGS_ANDROID_LOCATION_CLIENT =
-      "settings_android_location_client";
+  static const String SETTINGS_ANDROID_NOTIFICATION_CHANNEL_NAME = 'settings_android_notificationChannelName';
+  static const String SETTINGS_ANDROID_NOTIFICATION_TITLE = 'settings_android_notificationTitle';
+  static const String SETTINGS_ANDROID_NOTIFICATION_TITLE_PAUSED = 'settings_android_notificationTitlePaused';
+  static const String SETTINGS_ANDROID_NOTIFICATION_MSG = 'settings_android_notificationMsg';
+  static const String SETTINGS_ANDROID_NOTIFICATION_MSG_PAUSED = 'settings_android_notificationMsgPaused';
+  static const String SETTINGS_ANDROID_NOTIFICATION_BIG_MSG = 'settings_android_notificationBigMsg';
+  static const String SETTINGS_ANDROID_NOTIFICATION_BIG_MSG_PAUSED = 'settings_android_notificationBigMsgPaused';
+  static const String SETTINGS_ANDROID_NOTIFICATION_ICON = 'settings_android_notificationIcon';
+  static const String SETTINGS_ANDROID_NOTIFICATION_ICON_COLOR = 'settings_android_notificationIconColor';
+  static const String SETTINGS_ANDROID_WAKE_LOCK_TIME = 'settings_android_wakeLockTime';
+  static const String SETTINGS_ANDROID_LOCATION_CLIENT = "settings_android_location_client";
 
-  static const String SETTINGS_IOS_SHOWS_BACKGROUND_LOCATION_INDICATOR =
-      'settings_ios_showsBackgroundLocationIndicator';
-  static const String SETTINGS_IOS_STOP_WITH_TERMINATE =
-      'settings_ios_stopWithTerminate';
+  static const String SETTINGS_IOS_SHOWS_BACKGROUND_LOCATION_INDICATOR = 'settings_ios_showsBackgroundLocationIndicator';
+  static const String SETTINGS_IOS_STOP_WITH_TERMINATE = 'settings_ios_stopWithTerminate';
 
   static const String BCM_SEND_LOCATION = 'BCM_SEND_LOCATION';
   static const String BCM_NOTIFICATION_CLICK = 'BCM_NOTIFICATION_CLICK';

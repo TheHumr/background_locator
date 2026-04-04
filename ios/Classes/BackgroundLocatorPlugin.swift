@@ -19,6 +19,9 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
         }
     }
 
+    private let defaultLocationTrackingActivityTypes: Set<String> = ["IN_VEHICLE", "ON_BICYCLE", "RUNNING", "WALKING", "ON_FOOT"]
+    private var locationTrackingActivityTypes: Set<String> = ["IN_VEHICLE", "ON_BICYCLE", "RUNNING", "WALKING", "ON_FOOT"]
+
     static var registerPlugins: FlutterPluginRegistrantCallback?
     static var instance: BackgroundLocatorPlugin?
 
@@ -74,13 +77,15 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
     }
 
     private func applicationDidEnterBackground(application: UIApplication!) {
-        if PreferencesManager.isServiceRunning() {
+        if PreferencesManager.isServiceRunning(), locationTracking {
             _locationManager.startMonitoringSignificantLocationChanges()
         }
     }
 
     private func applicationWillTerminate(application: UIApplication!) {
-        self.observeRegionForLocation(location: _lastLocation)
+        if locationTracking, _lastLocation != nil {
+            self.observeRegionForLocation(location: _lastLocation)
+        }
         if PreferencesManager.isStopWithTerminate() {
             self.removeLocator()
         }
@@ -149,6 +154,34 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
         _locationManager.pausesLocationUpdatesAutomatically = false
     }
 
+    func startLocationTracking() {
+        if locationTracking {
+            return
+        }
+
+        _locationManager.desiredAccuracy = PreferencesManager.getAccuracy()
+        _locationManager.startUpdatingLocation()
+        _locationManager.startMonitoringSignificantLocationChanges()
+        locationTracking = true
+    }
+
+    func stopLocationTracking() {
+        if !locationTracking {
+            return
+        }
+
+        _locationManager.stopUpdatingLocation()
+        _locationManager.stopMonitoringSignificantLocationChanges()
+        locationTracking = false
+    }
+
+    func shouldTrackLocation(activity: CMMotionActivity?) -> Bool {
+        guard let activityType = activity?.toJson()["type"] as? String else {
+            return false
+        }
+        return locationTrackingActivityTypes.contains(activityType)
+    }
+
     // MARK: ActivityManager Methods
     func registerActivityRecognition() {
         _activityManager.startActivityUpdates(to: OperationQueue.init()) { (activity) in
@@ -157,12 +190,10 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
                 
                 self.sendActivityRecognitionEvent(data: a.toJson())
                 
-                if !self.locationTracking, a.walking || a.running || a.automotive || a.cycling {
-                    self._locationManager.desiredAccuracy = PreferencesManager.getAccuracy()
-                    self.locationTracking = true
-                } else if self.locationTracking, a.stationary {
-                    self._locationManager.desiredAccuracy = kCLLocationAccuracyReduced
-                    self.locationTracking = false
+                if self.shouldTrackLocation(activity: a) {
+                    self.startLocationTracking()
+                } else {
+                    self.stopLocationTracking()
                 }
             }
         }
@@ -245,6 +276,7 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
         let distanceFilter = settings.object(forKey: kSettingsDistanceFilter) as! Double
         let showsBackgroundLocationIndicator = settings.object(forKey: kSettingsShowsBackgroundLocationIndicator) as! Bool
         let stopWithTerminate = settings.object(forKey: kSettingsStopWithTerminate) as! Bool
+        locationTrackingActivityTypes = Set((settings.object(forKey: kSettingsLocationTrackingActivityTypes) as? [String]) ?? Array(defaultLocationTrackingActivityTypes))
         let activityRecognitionEnabled = settings.object(forKey: kSettingsActivityRecognitionEnabled) as! Bool
 
         _locationManager.desiredAccuracy = accuracy
@@ -271,13 +303,11 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
         let disposePluggable = DisposePluggable()
         disposePluggable.setCallback(callbackHandle: disposeCallback)
         
-        locationTracking = true
-
-        _locationManager.startUpdatingLocation()
-        _locationManager.startMonitoringSignificantLocationChanges()
-        
         if activityRecognitionEnabled {
+            locationTracking = false
             registerActivityRecognition()
+        } else {
+            startLocationTracking()
         }
     }
 
@@ -286,13 +316,9 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
             return
         }
 
-        _locationManager.stopUpdatingLocation()
-
         if #available(iOS 9.0, *) {
             _locationManager.allowsBackgroundLocationUpdates = false
         }
-
-        _locationManager.stopMonitoringSignificantLocationChanges()
 
         for region in _locationManager.monitoredRegions {
             _locationManager.stopMonitoring(for: region)
@@ -301,6 +327,7 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
         let disposePluggable = DisposePluggable()
         disposePluggable.onServiceDispose()
         
+        stopLocationTracking()
         unregisterActivityRecognition()
     }
 

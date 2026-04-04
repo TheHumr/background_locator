@@ -40,6 +40,7 @@ let kArgIsLocationTracking: String = "isLocationTracking"
 let kSettingsAccuracy: String = "settings_accuracy"
 let kSettingsDistanceFilter: String = "settings_distanceFilter"
 let kSettingsActivityRecognitionEnabled: String = "settings_activityRecognitionEnabled"
+let kSettingsLocationTrackingActivityTypes: String = "settings_locationTrackingActivityTypes"
 let kSettingsShowsBackgroundLocationIndicator: String = "settings_ios_showsBackgroundLocationIndicator"
 let kSettingsStopWithTerminate: String = "settings_ios_stopWithTerminate"
 

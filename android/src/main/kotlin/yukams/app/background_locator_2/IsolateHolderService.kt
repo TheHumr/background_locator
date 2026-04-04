@@ -47,10 +47,10 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         private val WAKELOCK_TAG = "IsolateHolderService::WAKE_LOCK"
 
         @JvmStatic
-        private val LOCATION_TRACKING_ACTIVITY_TYPES = listOf("IN_VEHICLE", "ON_BICYCLE", "RUNNING", "WALKING", "ON_FOOT", "TILTING")
+        private val DEFAULT_LOCATION_TRACKING_ACTIVITY_TYPES = setOf("IN_VEHICLE", "ON_BICYCLE", "RUNNING", "WALKING", "ON_FOOT")
 
         @JvmStatic
-        private val LOCATION_NON_TRACKING_ACTIVITY_TYPES = listOf("STILL")
+        private var locationTrackingActivityTypes = DEFAULT_LOCATION_TRACKING_ACTIVITY_TYPES
 
         @JvmStatic
         var backgroundEngine: FlutterEngine? = null
@@ -72,6 +72,9 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
 
         @JvmStatic
         var activityData: ActivityData = ActivityData.unknown()
+
+        @JvmStatic
+        var activityRecognitionEnabled = false
 
         @JvmStatic
         var isServiceInitialized = false
@@ -249,20 +252,24 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
 
         locatorClient = context?.let { getLocationClient(it) }
 
-        registerLocationUpdates(trackingMode)
+        activityRecognitionEnabled = intent.getBooleanExtra(Keys.SETTINGS_ACTIVITY_RECOGNITION_ENABLED, false)
+        locationTrackingActivityTypes = intent.getStringArrayListExtra(Keys.SETTINGS_LOCATION_TRACKING_ACTIVITY_TYPES)?.toSet() ?: DEFAULT_LOCATION_TRACKING_ACTIVITY_TYPES
+
+        if (shouldLocationTrackingBeActive()) {
+            registerLocationUpdates(trackingMode)
+        } else {
+            isLocationTracking = false
+            updateNotification()
+        }
 
         intent.getBooleanExtra(Keys.SETTINGS_CHARGING_MODE_ENABLED, false).let { enabled ->
             if (enabled) {
-                runBlocking {
-                    registerChargingStateReceiver()
-                }
+                runBlocking { registerChargingStateReceiver() }
             }
         }
 
-        intent.getBooleanExtra(Keys.SETTINGS_ACTIVITY_RECOGNITION_ENABLED, false).let { enabled ->
-            if (enabled) {
-                context?.let { registerActivityRecognition(it) }
-            }
+        if (activityRecognitionEnabled) {
+            context?.let { registerActivityRecognition(it) }
         }
 
         // Fill pluggable list
@@ -531,9 +538,9 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
                     sendActivityRecognitionEvent(context)
 
                     if (isServiceRunning) {
-                        if (!isLocationTracking && isInLocationTrackingActivityType()) {
+                        if (!isLocationTracking && shouldLocationTrackingBeActive()) {
                             registerLocationUpdates(trackingMode, sendIsLocationTrackingEvent = true)
-                        } else if (isLocationTracking && isInNonLocationTrackingActivityType()) {
+                        } else if (isLocationTracking && !shouldLocationTrackingBeActive()) {
                             unregisterLocationUpdates(sendIsLocationTrackingEvent = true)
                         }
                     }
@@ -550,19 +557,17 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         if (IsolateHolderService.trackingMode != trackingMode) {
             IsolateHolderService.trackingMode = trackingMode
             onTrackingModeUpdated(trackingMode)
-            unregisterLocationUpdates(sendIsLocationTrackingEvent = true)
-            if (isInLocationTrackingActivityType()) {
+            if (isLocationTracking) {
+                unregisterLocationUpdates(sendIsLocationTrackingEvent = true)
+            }
+            if (shouldLocationTrackingBeActive()) {
                 registerLocationUpdates(trackingMode, sendIsLocationTrackingEvent = true)
             }
         }
     }
 
-    private fun isInLocationTrackingActivityType(): Boolean {
-        return activityData?.let { LOCATION_TRACKING_ACTIVITY_TYPES.contains(it.type) } ?: true
-    }
-
-    private fun isInNonLocationTrackingActivityType(): Boolean {
-        return activityData?.let { LOCATION_NON_TRACKING_ACTIVITY_TYPES.contains(it.type) } ?: false
+    private fun shouldLocationTrackingBeActive(): Boolean {
+        return !activityRecognitionEnabled || locationTrackingActivityTypes.contains(activityData.type)
     }
 
     private fun invokeBackgroundChannelMethod(method: String, result: HashMap<Any, Any>) {
