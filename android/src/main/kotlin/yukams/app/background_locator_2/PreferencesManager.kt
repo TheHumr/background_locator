@@ -131,6 +131,21 @@ class PreferencesManager {
                     .apply()
 
             sharedPreferences.edit()
+                    .putBoolean(Keys.SETTINGS_BLUETOOTH_SENSOR_TRACKING_ENABLED,
+                        (settings[Keys.SETTINGS_BLUETOOTH_SENSOR_TRACKING_ENABLED] as Boolean))
+                    .apply()
+
+            sharedPreferences.edit()
+                    .putString(Keys.SETTINGS_BLUETOOTH_SENSOR_MAC,
+                            settings[Keys.SETTINGS_BLUETOOTH_SENSOR_MAC] as? String)
+                    .apply()
+
+            sharedPreferences.edit()
+                    .putInt(Keys.SETTINGS_BLUETOOTH_SENSOR_MISSING_TIMEOUT_SECONDS,
+                            settings[Keys.SETTINGS_BLUETOOTH_SENSOR_MISSING_TIMEOUT_SECONDS] as Int)
+                    .apply()
+
+            sharedPreferences.edit()
                     .putInt(Keys.SETTINGS_TRACKING_MODE,
                         (settings[Keys.SETTINGS_TRACKING_MODE] as Int))
                     .apply()
@@ -212,6 +227,15 @@ class PreferencesManager {
 
             settings[Keys.SETTINGS_ACTIVITY_RECOGNITION_ENABLED] =
                     sharedPreferences.getBoolean(Keys.SETTINGS_ACTIVITY_RECOGNITION_ENABLED, false)
+
+            settings[Keys.SETTINGS_BLUETOOTH_SENSOR_TRACKING_ENABLED] =
+                    sharedPreferences.getBoolean(Keys.SETTINGS_BLUETOOTH_SENSOR_TRACKING_ENABLED, false)
+
+            settings[Keys.SETTINGS_BLUETOOTH_SENSOR_MAC] =
+                    sharedPreferences.getString(Keys.SETTINGS_BLUETOOTH_SENSOR_MAC, null)
+
+            settings[Keys.SETTINGS_BLUETOOTH_SENSOR_MISSING_TIMEOUT_SECONDS] =
+                    sharedPreferences.getInt(Keys.SETTINGS_BLUETOOTH_SENSOR_MISSING_TIMEOUT_SECONDS, 120)
 
             settings[Keys.SETTINGS_TRACKING_MODE] =
                     sharedPreferences.getInt(Keys.SETTINGS_TRACKING_MODE, 0)

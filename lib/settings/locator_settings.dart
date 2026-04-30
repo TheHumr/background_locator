@@ -28,6 +28,9 @@ class LocatorSettings {
   final bool chargingModeEnabled;
   final bool activityRecognitionEnabled;
   final List<String> locationTrackingActivityTypes;
+  final bool bluetoothSensorTrackingEnabled;
+  final String? bluetoothSensorMac;
+  final int bluetoothSensorMissingTimeoutSeconds;
 
   /// [accuracy] The accuracy of location, Default is max accuracy NAVIGATION.
   ///
@@ -39,5 +42,8 @@ class LocatorSettings {
     required this.chargingModeEnabled,
     required this.activityRecognitionEnabled,
     required this.locationTrackingActivityTypes,
+    required this.bluetoothSensorTrackingEnabled,
+    required this.bluetoothSensorMac,
+    required this.bluetoothSensorMissingTimeoutSeconds,
   });
 }

@@ -62,8 +62,17 @@ class BackgroundLocator {
   }
 
   static Future<Map<String, dynamic>?> currentActivity() async {
-    final data = await _channel.invokeMethod<String>(Keys.METHOD_PLUGIN_CURRENT_ACTIVITY);
-    return data != null ? jsonDecode(data) : null;
+    final data = await _channel.invokeMethod<dynamic>(Keys.METHOD_PLUGIN_CURRENT_ACTIVITY);
+    if (data == null) {
+      return null;
+    }
+    if (data is String) {
+      return jsonDecode(data) as Map<String, dynamic>;
+    }
+    if (data is Map) {
+      return data.cast<String, dynamic>();
+    }
+    throw StateError('Unexpected currentActivity response type: ${data.runtimeType}');
   }
 
   static Future<void> updateNotificationText({String? title, String? msg, String? bigMsg}) async {

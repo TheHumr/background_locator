@@ -163,6 +163,15 @@ class Keys {
         val SETTINGS_ACTIVITY_RECOGNITION_ENABLED = "settings_activityRecognitionEnabled"
 
         @JvmStatic
+        val SETTINGS_BLUETOOTH_SENSOR_TRACKING_ENABLED = "settings_bluetoothSensorTrackingEnabled"
+
+        @JvmStatic
+        val SETTINGS_BLUETOOTH_SENSOR_MAC = "settings_bluetoothSensorMac"
+
+        @JvmStatic
+        val SETTINGS_BLUETOOTH_SENSOR_MISSING_TIMEOUT_SECONDS = "settings_bluetoothSensorMissingTimeoutSeconds"
+
+        @JvmStatic
         val SETTINGS_ANDROID_NOTIFICATION_CHANNEL_NAME = "settings_android_notificationChannelName"
 
         @JvmStatic

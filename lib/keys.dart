@@ -42,6 +42,9 @@ class Keys {
   static const String SETTINGS_MAX_WAIT_TIME = 'settings_max_wait_time';
   static const String SETTINGS_DISTANCE_FILTER = 'settings_distanceFilter';
   static const String SETTINGS_ACTIVITY_RECOGNITION_ENABLED = 'settings_activityRecognitionEnabled';
+  static const String SETTINGS_BLUETOOTH_SENSOR_TRACKING_ENABLED = 'settings_bluetoothSensorTrackingEnabled';
+  static const String SETTINGS_BLUETOOTH_SENSOR_MAC = 'settings_bluetoothSensorMac';
+  static const String SETTINGS_BLUETOOTH_SENSOR_MISSING_TIMEOUT_SECONDS = 'settings_bluetoothSensorMissingTimeoutSeconds';
   static const String SETTINGS_TRACKING_MODE = 'settings_tracking_mode';
   static const String SETTINGS_LOCATION_TRACKING_ACTIVITY_TYPES = 'settings_locationTrackingActivityTypes';
   static const String SETTINGS_CHARGING_MODE_ENABLED = 'settings_chargingModeEnabled';
@@ -58,8 +61,10 @@ class Keys {
   static const String SETTINGS_ANDROID_WAKE_LOCK_TIME = 'settings_android_wakeLockTime';
   static const String SETTINGS_ANDROID_LOCATION_CLIENT = "settings_android_location_client";
 
-  static const String SETTINGS_IOS_SHOWS_BACKGROUND_LOCATION_INDICATOR = 'settings_ios_showsBackgroundLocationIndicator';
-  static const String SETTINGS_IOS_STOP_WITH_TERMINATE = 'settings_ios_stopWithTerminate';
+  static const String SETTINGS_IOS_SHOWS_BACKGROUND_LOCATION_INDICATOR =
+      'settings_ios_showsBackgroundLocationIndicator';
+  static const String SETTINGS_IOS_STOP_WITH_TERMINATE =
+      'settings_ios_stopWithTerminate';
 
   static const String BCM_SEND_LOCATION = 'BCM_SEND_LOCATION';
   static const String BCM_NOTIFICATION_CLICK = 'BCM_NOTIFICATION_CLICK';

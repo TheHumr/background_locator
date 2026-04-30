@@ -72,6 +72,9 @@ class AndroidSettings extends LocatorSettings {
       bool chargingModeEnabled = false,
       bool activityRecognitionEnabled = false,
       List<String> locationTrackingActivityTypes = defaultLocationTrackingActivityTypes,
+      bool bluetoothSensorTrackingEnabled = false,
+      String? bluetoothSensorMac,
+      int bluetoothSensorMissingTimeoutSeconds = 120,
       this.client = LocationClient.google})
       : super(
           accuracy: accuracy,
@@ -80,6 +83,9 @@ class AndroidSettings extends LocatorSettings {
           chargingModeEnabled: chargingModeEnabled,
           activityRecognitionEnabled: activityRecognitionEnabled,
           locationTrackingActivityTypes: locationTrackingActivityTypes,
+          bluetoothSensorTrackingEnabled: bluetoothSensorTrackingEnabled,
+          bluetoothSensorMac: bluetoothSensorMac,
+          bluetoothSensorMissingTimeoutSeconds: bluetoothSensorMissingTimeoutSeconds,
         );
 
   Map<String, dynamic> toMap() {
@@ -93,6 +99,9 @@ class AndroidSettings extends LocatorSettings {
       Keys.SETTINGS_CHARGING_MODE_ENABLED: chargingModeEnabled,
       Keys.SETTINGS_ACTIVITY_RECOGNITION_ENABLED: activityRecognitionEnabled,
       Keys.SETTINGS_LOCATION_TRACKING_ACTIVITY_TYPES: locationTrackingActivityTypes,
+      Keys.SETTINGS_BLUETOOTH_SENSOR_TRACKING_ENABLED: bluetoothSensorTrackingEnabled,
+      Keys.SETTINGS_BLUETOOTH_SENSOR_MAC: bluetoothSensorMac,
+      Keys.SETTINGS_BLUETOOTH_SENSOR_MISSING_TIMEOUT_SECONDS: bluetoothSensorMissingTimeoutSeconds,
       Keys.SETTINGS_ANDROID_WAKE_LOCK_TIME: wakeLockTime,
       Keys.SETTINGS_ANDROID_NOTIFICATION_CHANNEL_NAME: androidNotificationSettings.notificationChannelName,
       Keys.SETTINGS_ANDROID_NOTIFICATION_TITLE: androidNotificationSettings.notificationTitle,

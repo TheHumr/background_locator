@@ -1,18 +1,26 @@
+import CoreBluetooth
 import CoreLocation
 import CoreMotion
 import Flutter
 import UIKit
 
-public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManagerDelegate, MethodCallHelperDelegate {
+public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManagerDelegate, CBCentralManagerDelegate, MethodCallHelperDelegate {
 
     private var _headlessRunner: FlutterEngine!
     private var _callbackChannel: FlutterMethodChannel!
     private var _mainChannel: FlutterMethodChannel!
     private var _registrar: FlutterPluginRegistrar!
     private var _locationManager: CLLocationManager!
+    private var _bluetoothManager: CBCentralManager?
     private var _lastLocation: CLLocation!
     private let _activityManager = CMMotionActivityManager()
     private var activity: CMMotionActivity?
+    private var activityRecognitionEnabled: Bool = false
+    private var bluetoothSensorTrackingEnabled: Bool = false
+    private var bluetoothSensorMac: String?
+    private var bluetoothSensorMissingTimeout: TimeInterval = 120
+    private var bluetoothSensorLastSeenAt: Date?
+    private var bluetoothSensorTimeoutWorkItem: DispatchWorkItem?
     private var locationTracking: Bool = false {
         didSet {
             sendIsLocationTrackingEvent(value: locationTracking)
@@ -182,6 +190,29 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
         return locationTrackingActivityTypes.contains(activityType)
     }
 
+    func shouldLocationTrackingBeActive() -> Bool {
+        if activityRecognitionEnabled {
+            return shouldTrackLocation(activity: activity)
+        }
+
+        if bluetoothSensorTrackingEnabled {
+            guard let lastSeenAt = bluetoothSensorLastSeenAt else {
+                return false
+            }
+            return Date().timeIntervalSince(lastSeenAt) <= bluetoothSensorMissingTimeout
+        }
+
+        return true
+    }
+
+    func reloadLocationTrackingForCurrentConditions() {
+        if shouldLocationTrackingBeActive() {
+            startLocationTracking()
+        } else {
+            stopLocationTracking()
+        }
+    }
+
     // MARK: ActivityManager Methods
     func registerActivityRecognition() {
         _activityManager.startActivityUpdates(to: OperationQueue.init()) { (activity) in
@@ -190,17 +221,72 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
                 
                 self.sendActivityRecognitionEvent(data: a.toJson())
                 
-                if self.shouldTrackLocation(activity: a) {
-                    self.startLocationTracking()
-                } else {
-                    self.stopLocationTracking()
-                }
+                self.reloadLocationTrackingForCurrentConditions()
             }
         }
     }
     
     func unregisterActivityRecognition() {
         _activityManager.stopActivityUpdates()
+    }
+
+    func registerBluetoothSensorScan() {
+        bluetoothSensorLastSeenAt = nil
+        _bluetoothManager = CBCentralManager(delegate: self, queue: nil)
+    }
+
+    func unregisterBluetoothSensorScan() {
+        bluetoothSensorTimeoutWorkItem?.cancel()
+        bluetoothSensorTimeoutWorkItem = nil
+        _bluetoothManager?.stopScan()
+        _bluetoothManager = nil
+    }
+
+    public func centralManagerDidUpdateState(_ central: CBCentralManager) {
+        if central.state == .poweredOn {
+            central.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
+        }
+    }
+
+    public func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
+        guard let selectedMac = bluetoothSensorMac else {
+            return
+        }
+        guard let data = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data else {
+            return
+        }
+        guard let mac = parseLevelSensorMac(manufacturerData: data), normalizeMac(mac) == normalizeMac(selectedMac) else {
+            return
+        }
+
+        bluetoothSensorLastSeenAt = Date()
+        scheduleBluetoothSensorTimeoutCheck()
+        reloadLocationTrackingForCurrentConditions()
+    }
+
+    func scheduleBluetoothSensorTimeoutCheck() {
+        bluetoothSensorTimeoutWorkItem?.cancel()
+        let item = DispatchWorkItem { [weak self] in
+            self?.reloadLocationTrackingForCurrentConditions()
+        }
+        bluetoothSensorTimeoutWorkItem = item
+        DispatchQueue.main.asyncAfter(deadline: .now() + bluetoothSensorMissingTimeout + 1, execute: item)
+    }
+
+    func parseLevelSensorMac(manufacturerData: Data) -> String? {
+        let data = [UInt8](manufacturerData)
+        let scanResponseStart = data.count > 27 && data[0] == 0xE8 && data[1] == 0x0A ? 27 : 25
+        guard data.count >= scanResponseStart + 6 else {
+            return nil
+        }
+        return data[scanResponseStart..<scanResponseStart + 6]
+            .reversed()
+            .map { String(format: "%02X", $0) }
+            .joined(separator: ":")
+    }
+
+    func normalizeMac(_ mac: String) -> String {
+        return mac.replacingOccurrences(of: ":", with: "").uppercased()
     }
     
     func sendActivityRecognitionEvent(data: NSDictionary) {
@@ -277,7 +363,10 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
         let showsBackgroundLocationIndicator = settings.object(forKey: kSettingsShowsBackgroundLocationIndicator) as! Bool
         let stopWithTerminate = settings.object(forKey: kSettingsStopWithTerminate) as! Bool
         locationTrackingActivityTypes = Set((settings.object(forKey: kSettingsLocationTrackingActivityTypes) as? [String]) ?? Array(defaultLocationTrackingActivityTypes))
-        let activityRecognitionEnabled = settings.object(forKey: kSettingsActivityRecognitionEnabled) as! Bool
+        activityRecognitionEnabled = settings.object(forKey: kSettingsActivityRecognitionEnabled) as! Bool
+        bluetoothSensorTrackingEnabled = (settings.object(forKey: kSettingsBluetoothSensorTrackingEnabled) as? Bool) ?? false
+        bluetoothSensorMac = settings.object(forKey: kSettingsBluetoothSensorMac) as? String
+        bluetoothSensorMissingTimeout = TimeInterval((settings.object(forKey: kSettingsBluetoothSensorMissingTimeoutSeconds) as? Int) ?? 120)
 
         _locationManager.desiredAccuracy = accuracy
         _locationManager.distanceFilter = distanceFilter
@@ -306,6 +395,9 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
         if activityRecognitionEnabled {
             locationTracking = false
             registerActivityRecognition()
+        } else if bluetoothSensorTrackingEnabled && bluetoothSensorMac != nil {
+            locationTracking = false
+            registerBluetoothSensorScan()
         } else {
             startLocationTracking()
         }
@@ -329,6 +421,7 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
         
         stopLocationTracking()
         unregisterActivityRecognition()
+        unregisterBluetoothSensorScan()
     }
 
     func setServiceRunning(_ value: Bool) {

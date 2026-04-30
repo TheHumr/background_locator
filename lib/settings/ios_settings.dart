@@ -23,6 +23,9 @@ class IOSSettings extends LocatorSettings {
     this.stopWithTerminate = false,
     bool activityRecognitionEnabled = false,
     List<String> locationTrackingActivityTypes = defaultLocationTrackingActivityTypes,
+    bool bluetoothSensorTrackingEnabled = false,
+    String? bluetoothSensorMac,
+    int bluetoothSensorMissingTimeoutSeconds = 120,
   }) : super(
           accuracy: accuracy,
           distanceFilter: distanceFilter,
@@ -30,6 +33,9 @@ class IOSSettings extends LocatorSettings {
           chargingModeEnabled: false,
           activityRecognitionEnabled: activityRecognitionEnabled,
           locationTrackingActivityTypes: locationTrackingActivityTypes,
+          bluetoothSensorTrackingEnabled: bluetoothSensorTrackingEnabled,
+          bluetoothSensorMac: bluetoothSensorMac,
+          bluetoothSensorMissingTimeoutSeconds: bluetoothSensorMissingTimeoutSeconds,
         ); //minutes
 
   Map<String, dynamic> toMap() {
@@ -38,6 +44,9 @@ class IOSSettings extends LocatorSettings {
       Keys.SETTINGS_DISTANCE_FILTER: distanceFilter,
       Keys.SETTINGS_ACTIVITY_RECOGNITION_ENABLED: activityRecognitionEnabled,
       Keys.SETTINGS_LOCATION_TRACKING_ACTIVITY_TYPES: locationTrackingActivityTypes,
+      Keys.SETTINGS_BLUETOOTH_SENSOR_TRACKING_ENABLED: bluetoothSensorTrackingEnabled,
+      Keys.SETTINGS_BLUETOOTH_SENSOR_MAC: bluetoothSensorMac,
+      Keys.SETTINGS_BLUETOOTH_SENSOR_MISSING_TIMEOUT_SECONDS: bluetoothSensorMissingTimeoutSeconds,
       Keys.SETTINGS_IOS_SHOWS_BACKGROUND_LOCATION_INDICATOR: showsBackgroundLocationIndicator,
       Keys.SETTINGS_IOS_STOP_WITH_TERMINATE: stopWithTerminate,
     };
