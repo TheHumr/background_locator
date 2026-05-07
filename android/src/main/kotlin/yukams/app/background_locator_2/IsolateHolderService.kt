@@ -61,13 +61,16 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         private val DEFAULT_LOCATION_TRACKING_ACTIVITY_TYPES = setOf("IN_VEHICLE", "ON_BICYCLE", "RUNNING", "WALKING", "ON_FOOT")
 
         @JvmStatic
-        private val BLUETOOTH_SENSOR_SCAN_WINDOW_MS = 10_000L
+        private val BLUETOOTH_SENSOR_SCAN_WINDOW_MS = 20_000L
 
         @JvmStatic
-        private val BLUETOOTH_SENSOR_SCAN_INTERVAL_MS = 15_000L
+        private val BLUETOOTH_SENSOR_SCAN_INTERVAL_MS = 20_000L
 
         @JvmStatic
         private val BLUETOOTH_SENSOR_SCAN_PENDING_INTENT_REQUEST_CODE = 43
+
+        @JvmStatic
+        private val BLUETOOTH_SENSOR_LOG_TAG = "BT_SENSOR_SCAN"
 
         @JvmStatic
         private var locationTrackingActivityTypes = DEFAULT_LOCATION_TRACKING_ACTIVITY_TYPES
@@ -649,6 +652,7 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
             return
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+            Log.d(BLUETOOTH_SENSOR_LOG_TAG, "scan_window_skipped reason=missing_permission")
             scheduleBluetoothSensorScanWindow(BLUETOOTH_SENSOR_SCAN_INTERVAL_MS)
             return
         }
@@ -689,10 +693,12 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
             bluetoothSensorScanPendingIntent = pendingIntent
             val errorCode = scanner.startScan(filters, settings, pendingIntent)
             if (errorCode != 0) {
+                Log.d(BLUETOOTH_SENSOR_LOG_TAG, "scan_window_start_failed mode=pending_intent error=$errorCode")
                 bluetoothSensorScanPendingIntent = null
                 scheduleBluetoothSensorScanWindow(BLUETOOTH_SENSOR_SCAN_INTERVAL_MS)
                 return
             }
+            Log.d(BLUETOOTH_SENSOR_LOG_TAG, "scan_window_started mode=pending_intent selected=$selectedMac")
         } else {
             bluetoothSensorScanCallback = object : ScanCallback() {
                 override fun onScanResult(callbackType: Int, result: ScanResult) {
@@ -704,6 +710,7 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
                 }
             }
             scanner.startScan(filters, settings, bluetoothSensorScanCallback)
+            Log.d(BLUETOOTH_SENSOR_LOG_TAG, "scan_window_started mode=callback selected=$selectedMac")
         }
         scheduleBluetoothSensorScanWindowStop()
     }
@@ -730,12 +737,14 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         bluetoothSensorScanCallback?.let { callback ->
             scanner?.stopScan(callback)
             bluetoothSensorScanCallback = null
+            Log.d(BLUETOOTH_SENSOR_LOG_TAG, "scan_window_stopped mode=callback schedule_next=$scheduleNext")
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             bluetoothSensorScanPendingIntent?.let { pendingIntent ->
                 scanner?.stopScan(pendingIntent)
                 pendingIntent.cancel()
                 bluetoothSensorScanPendingIntent = null
+                Log.d(BLUETOOTH_SENSOR_LOG_TAG, "scan_window_stopped mode=pending_intent schedule_next=$scheduleNext")
             }
         }
         if (scheduleNext) {
@@ -765,6 +774,7 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         bluetoothSensorScanStartRunnable = Runnable {
             startBluetoothSensorScanWindow()
         }
+        Log.d(BLUETOOTH_SENSOR_LOG_TAG, "scan_window_scheduled delay_ms=$delayMillis")
         Handler(mainLooper).postDelayed(bluetoothSensorScanStartRunnable!!, delayMillis)
     }
 
@@ -772,6 +782,10 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         bluetoothSensorScanWindowStopRunnable?.let { Handler(mainLooper).removeCallbacks(it) }
         bluetoothSensorScanWindowStopRunnable = Runnable {
             bluetoothSensorScanWindowStopRunnable = null
+            if (shouldKeepBluetoothSensorScanContinuous()) {
+                Log.d(BLUETOOTH_SENSOR_LOG_TAG, "scan_window_kept_continuous")
+                return@Runnable
+            }
             stopBluetoothSensorScanWindow(scheduleNext = bluetoothSensorScanSchedulerActive)
         }
         Handler(mainLooper).postDelayed(bluetoothSensorScanWindowStopRunnable!!, BLUETOOTH_SENSOR_SCAN_WINDOW_MS)
@@ -784,6 +798,7 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         }
 
         bluetoothSensorLastSeenAt = SystemClock.elapsedRealtime()
+        Log.d(BLUETOOTH_SENSOR_LOG_TAG, "sensor_seen mac=${result.device.address} rssi=${result.rssi} tracking=$isLocationTracking")
         scheduleBluetoothSensorTimeoutCheck()
         reloadLocationUpdatesForCurrentConditions()
     }
@@ -791,9 +806,18 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
     private fun scheduleBluetoothSensorTimeoutCheck() {
         bluetoothSensorTimeoutRunnable?.let { Handler(mainLooper).removeCallbacks(it) }
         bluetoothSensorTimeoutRunnable = Runnable {
+            if (!shouldKeepBluetoothSensorScanContinuous()) {
+                Log.d(BLUETOOTH_SENSOR_LOG_TAG, "sensor_timeout_returning_to_periodic")
+                stopBluetoothSensorScanWindow(scheduleNext = bluetoothSensorScanSchedulerActive)
+            }
             reloadLocationUpdatesForCurrentConditions()
         }
         Handler(mainLooper).postDelayed(bluetoothSensorTimeoutRunnable!!, bluetoothSensorMissingTimeoutMillis + 1000L)
+    }
+
+    private fun shouldKeepBluetoothSensorScanContinuous(): Boolean {
+        val lastSeenAt = bluetoothSensorLastSeenAt ?: return false
+        return isLocationTracking && SystemClock.elapsedRealtime() - lastSeenAt <= bluetoothSensorMissingTimeoutMillis
     }
 
     private fun normalizeMac(mac: String): String {
