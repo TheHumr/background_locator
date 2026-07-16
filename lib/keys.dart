@@ -43,7 +43,7 @@ class Keys {
   static const String SETTINGS_DISTANCE_FILTER = 'settings_distanceFilter';
   static const String SETTINGS_ACTIVITY_RECOGNITION_ENABLED = 'settings_activityRecognitionEnabled';
   static const String SETTINGS_BLUETOOTH_SENSOR_TRACKING_ENABLED = 'settings_bluetoothSensorTrackingEnabled';
-  static const String SETTINGS_BLUETOOTH_SENSOR_MAC = 'settings_bluetoothSensorMac';
+  static const String SETTINGS_BLUETOOTH_SENSOR_MACS = 'settings_bluetoothSensorMacs';
   static const String SETTINGS_BLUETOOTH_SENSOR_MISSING_TIMEOUT_SECONDS = 'settings_bluetoothSensorMissingTimeoutSeconds';
   static const String SETTINGS_TRACKING_MODE = 'settings_tracking_mode';
   static const String SETTINGS_LOCATION_TRACKING_ACTIVITY_TYPES = 'settings_locationTrackingActivityTypes';
