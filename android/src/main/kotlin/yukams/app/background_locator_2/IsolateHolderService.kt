@@ -103,7 +103,10 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         var bluetoothSensorTrackingEnabled = false
 
         @JvmStatic
-        var bluetoothSensorMac: String? = null
+        var bluetoothSensorMacs: Set<String> = emptySet()
+
+        @JvmStatic
+        private var bluetoothSensorMacsNormalized: Set<String> = emptySet()
 
         @JvmStatic
         var bluetoothSensorMissingTimeoutMillis = 120_000L
@@ -326,7 +329,8 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         activityRecognitionEnabled = intent.getBooleanExtra(Keys.SETTINGS_ACTIVITY_RECOGNITION_ENABLED, false)
         locationTrackingActivityTypes = intent.getStringArrayListExtra(Keys.SETTINGS_LOCATION_TRACKING_ACTIVITY_TYPES)?.toSet() ?: DEFAULT_LOCATION_TRACKING_ACTIVITY_TYPES
         bluetoothSensorTrackingEnabled = intent.getBooleanExtra(Keys.SETTINGS_BLUETOOTH_SENSOR_TRACKING_ENABLED, false)
-        bluetoothSensorMac = intent.getStringExtra(Keys.SETTINGS_BLUETOOTH_SENSOR_MAC)
+        bluetoothSensorMacs = intent.getStringExtra(Keys.SETTINGS_BLUETOOTH_SENSOR_MACS)?.split(';')?.filter { it.isNotBlank() }?.toSet() ?: emptySet()
+        bluetoothSensorMacsNormalized = bluetoothSensorMacs.map { normalizeMac(it) }.toSet()
         bluetoothSensorMissingTimeoutMillis = intent.getIntExtra(Keys.SETTINGS_BLUETOOTH_SENSOR_MISSING_TIMEOUT_SECONDS, 120) * 1000L
         bluetoothSensorLastSeenAt = null
 
@@ -347,7 +351,7 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
             context?.let { registerActivityRecognition(it) }
         }
 
-        if (bluetoothSensorTrackingEnabled && !bluetoothSensorMac.isNullOrBlank()) {
+        if (bluetoothSensorTrackingEnabled && bluetoothSensorMacs.isNotEmpty()) {
             registerBluetoothSensorScan()
         }
 
@@ -672,17 +676,22 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
             scheduleBluetoothSensorScanWindow(BLUETOOTH_SENSOR_SCAN_INTERVAL_MS)
             return
         }
-        val selectedMac = bluetoothSensorMac
-        if (selectedMac == null) {
+        val selectedMacs = bluetoothSensorMacs
+        if (selectedMacs.isEmpty()) {
             scheduleBluetoothSensorScanWindow(BLUETOOTH_SENSOR_SCAN_INTERVAL_MS)
             return
         }
 
-        val filters = try {
-            listOf(ScanFilter.Builder().setDeviceAddress(selectedMac).build())
-        } catch (e: IllegalArgumentException) {
-            emptyList()
+        val builtFilters = selectedMacs.mapNotNull { mac ->
+            try {
+                ScanFilter.Builder().setDeviceAddress(mac).build()
+            } catch (e: IllegalArgumentException) {
+                null
+            }
         }
+        // use hardware filters only if EVERY MAC produced one; if any was rejected, scan unfiltered (null)
+        // so no beacon is silently dropped -- still matched by normalizeMac
+        val filters = if (builtFilters.size == selectedMacs.size) builtFilters else null
         val settings = ScanSettings.Builder()
                 .setScanMode(ScanSettings.SCAN_MODE_BALANCED)
                 .setReportDelay(0)
@@ -698,7 +707,7 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
                 scheduleBluetoothSensorScanWindow(BLUETOOTH_SENSOR_SCAN_INTERVAL_MS)
                 return
             }
-            Log.d(BLUETOOTH_SENSOR_LOG_TAG, "scan_window_started mode=pending_intent selected=$selectedMac")
+            Log.d(BLUETOOTH_SENSOR_LOG_TAG, "scan_window_started mode=pending_intent selected=$selectedMacs")
         } else {
             bluetoothSensorScanCallback = object : ScanCallback() {
                 override fun onScanResult(callbackType: Int, result: ScanResult) {
@@ -710,7 +719,7 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
                 }
             }
             scanner.startScan(filters, settings, bluetoothSensorScanCallback)
-            Log.d(BLUETOOTH_SENSOR_LOG_TAG, "scan_window_started mode=callback selected=$selectedMac")
+            Log.d(BLUETOOTH_SENSOR_LOG_TAG, "scan_window_started mode=callback selected=$selectedMacs")
         }
         scheduleBluetoothSensorScanWindowStop()
     }
@@ -792,8 +801,8 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
     }
 
     private fun onBluetoothSensorScanResult(result: ScanResult) {
-        val selectedMac = bluetoothSensorMac ?: return
-        if (normalizeMac(result.device.address) != normalizeMac(selectedMac)) {
+        if (bluetoothSensorMacsNormalized.isEmpty()) return
+        if (normalizeMac(result.device.address) !in bluetoothSensorMacsNormalized) {
             return
         }
 

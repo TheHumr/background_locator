@@ -131,7 +131,7 @@ class BackgroundLocatorPlugin
             intent.putExtra(Keys.SETTINGS_CHARGING_MODE_ENABLED, settings[Keys.SETTINGS_CHARGING_MODE_ENABLED] as? Boolean)
             intent.putExtra(Keys.SETTINGS_ACTIVITY_RECOGNITION_ENABLED, settings[Keys.SETTINGS_ACTIVITY_RECOGNITION_ENABLED] as? Boolean)
             intent.putExtra(Keys.SETTINGS_BLUETOOTH_SENSOR_TRACKING_ENABLED, settings[Keys.SETTINGS_BLUETOOTH_SENSOR_TRACKING_ENABLED] as? Boolean)
-            intent.putExtra(Keys.SETTINGS_BLUETOOTH_SENSOR_MAC, settings[Keys.SETTINGS_BLUETOOTH_SENSOR_MAC] as? String)
+            intent.putExtra(Keys.SETTINGS_BLUETOOTH_SENSOR_MACS, settings[Keys.SETTINGS_BLUETOOTH_SENSOR_MACS] as? String)
             intent.putExtra(Keys.SETTINGS_BLUETOOTH_SENSOR_MISSING_TIMEOUT_SECONDS, settings[Keys.SETTINGS_BLUETOOTH_SENSOR_MISSING_TIMEOUT_SECONDS] as? Int)
             intent.putStringArrayListExtra(
                 Keys.SETTINGS_LOCATION_TRACKING_ACTIVITY_TYPES,

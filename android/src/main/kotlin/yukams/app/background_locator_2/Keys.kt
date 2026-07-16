@@ -166,7 +166,7 @@ class Keys {
         val SETTINGS_BLUETOOTH_SENSOR_TRACKING_ENABLED = "settings_bluetoothSensorTrackingEnabled"
 
         @JvmStatic
-        val SETTINGS_BLUETOOTH_SENSOR_MAC = "settings_bluetoothSensorMac"
+        val SETTINGS_BLUETOOTH_SENSOR_MACS = "settings_bluetoothSensorMacs"
 
         @JvmStatic
         val SETTINGS_BLUETOOTH_SENSOR_MISSING_TIMEOUT_SECONDS = "settings_bluetoothSensorMissingTimeoutSeconds"

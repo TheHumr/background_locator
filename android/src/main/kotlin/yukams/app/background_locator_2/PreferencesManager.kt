@@ -136,8 +136,8 @@ class PreferencesManager {
                     .apply()
 
             sharedPreferences.edit()
-                    .putString(Keys.SETTINGS_BLUETOOTH_SENSOR_MAC,
-                            settings[Keys.SETTINGS_BLUETOOTH_SENSOR_MAC] as? String)
+                    .putString(Keys.SETTINGS_BLUETOOTH_SENSOR_MACS,
+                            settings[Keys.SETTINGS_BLUETOOTH_SENSOR_MACS] as? String)
                     .apply()
 
             sharedPreferences.edit()
@@ -231,8 +231,9 @@ class PreferencesManager {
             settings[Keys.SETTINGS_BLUETOOTH_SENSOR_TRACKING_ENABLED] =
                     sharedPreferences.getBoolean(Keys.SETTINGS_BLUETOOTH_SENSOR_TRACKING_ENABLED, false)
 
-            settings[Keys.SETTINGS_BLUETOOTH_SENSOR_MAC] =
-                    sharedPreferences.getString(Keys.SETTINGS_BLUETOOTH_SENSOR_MAC, null)
+            settings[Keys.SETTINGS_BLUETOOTH_SENSOR_MACS] =
+                    sharedPreferences.getString(Keys.SETTINGS_BLUETOOTH_SENSOR_MACS, null)
+                            ?: sharedPreferences.getString("settings_bluetoothSensorMac", null) // migrate pre-ATX-145 single-MAC key
 
             settings[Keys.SETTINGS_BLUETOOTH_SENSOR_MISSING_TIMEOUT_SECONDS] =
                     sharedPreferences.getInt(Keys.SETTINGS_BLUETOOTH_SENSOR_MISSING_TIMEOUT_SECONDS, 120)
