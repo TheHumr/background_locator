@@ -114,6 +114,16 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         @JvmStatic
         private var bluetoothSensorLastSeenAt: Long? = null
 
+        // A single physical advertisement can be reported by more than one onScanResult
+        // callback (e.g. legacy adv + scan response merged separately by the platform),
+        // a few ms apart with slightly different RSSI. Debounce per MAC so that doesn't
+        // turn into two REC45 sends.
+        @JvmStatic
+        private val bluetoothSensorDataLastSentAt: MutableMap<String, Long> = mutableMapOf()
+
+        @JvmStatic
+        private val BLUETOOTH_SENSOR_DATA_DEBOUNCE_MS = 2_000L
+
         @JvmStatic
         private var activeService: IsolateHolderService? = null
 
@@ -810,6 +820,66 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         Log.d(BLUETOOTH_SENSOR_LOG_TAG, "sensor_seen mac=${result.device.address} rssi=${result.rssi} tracking=$isLocationTracking")
         scheduleBluetoothSensorTimeoutCheck()
         reloadLocationUpdatesForCurrentConditions()
+
+        // This sensor's advertisement carries manufacturer data for company ID 0x0AE8 twice
+        // (once in the advertising packet with real sensor readings, once in the scan
+        // response with just a repeated mode byte + MAC). ScanRecord.getManufacturerSpecificData()
+        // only keeps one occurrence per company ID and, on this hardware, keeps the wrong
+        // (shorter, non-sensor) one - so parse the raw bytes manually and take the longest match.
+        val rawBytes = result.scanRecord?.bytes
+        val advData = rawBytes?.let { findLongestManufacturerSpecificData(it, 0x0AE8) }
+        if (advData == null || advData.isEmpty()) {
+            Log.d(BLUETOOTH_SENSOR_LOG_TAG, "sensor_data_empty mac=${result.device.address}")
+            return
+        }
+
+        val normalizedMac = normalizeMac(result.device.address)
+        val now = SystemClock.elapsedRealtime()
+        val lastSentAt = bluetoothSensorDataLastSentAt[normalizedMac]
+        if (lastSentAt != null && now - lastSentAt < BLUETOOTH_SENSOR_DATA_DEBOUNCE_MS) {
+            return
+        }
+        bluetoothSensorDataLastSentAt[normalizedMac] = now
+
+        Log.d(BLUETOOTH_SENSOR_LOG_TAG, "sensor_data_forwarded mac=${result.device.address} rssi=${result.rssi} advDataLength=${advData.size}")
+        context?.let { sendBluetoothSensorDataEvent(it, result.device.address, result.rssi, advData) }
+    }
+
+    // Manually walks the raw BLE advertisement AD structures (length-prefixed: 1 length byte,
+    // 1 type byte, then `length - 1` data bytes) looking for every Manufacturer Specific Data
+    // (type 0xFF) structure whose 2-byte little-endian company ID matches, and returns the
+    // longest payload found - see the comment at the call site for why "longest" rather than
+    // "first"/"last".
+    private fun findLongestManufacturerSpecificData(rawBytes: ByteArray, companyId: Int): ByteArray? {
+        var best: ByteArray? = null
+        var i = 0
+        while (i < rawBytes.size) {
+            val length = rawBytes[i].toInt() and 0xFF
+            if (length == 0 || i + 1 + length > rawBytes.size) break
+            val type = rawBytes[i + 1].toInt() and 0xFF
+            if (type == 0xFF && length >= 3) {
+                val id = (rawBytes[i + 2].toInt() and 0xFF) or ((rawBytes[i + 3].toInt() and 0xFF) shl 8)
+                if (id == companyId) {
+                    val payload = rawBytes.copyOfRange(i + 4, i + 1 + length)
+                    if (best == null || payload.size > best!!.size) {
+                        best = payload
+                    }
+                }
+            }
+            i += 1 + length
+        }
+        return best
+    }
+
+    private fun sendBluetoothSensorDataEvent(context: Context, mac: String, rssi: Int, advData: ByteArray) {
+        val callback = PreferencesManager.getCallbackHandle(context, Keys.CALLBACK_HANDLE_KEY) as Long
+        val map = hashMapOf<Any, Any>(
+                Keys.ARG_CALLBACK to callback,
+                Keys.ARG_BLUETOOTH_SENSOR_MAC to mac,
+                Keys.ARG_BLUETOOTH_SENSOR_RSSI to rssi,
+                Keys.ARG_BLUETOOTH_SENSOR_ADV_DATA to advData
+        )
+        invokeBackgroundChannelMethod(Keys.BCM_BLUETOOTH_SENSOR_DATA, map)
     }
 
     private fun scheduleBluetoothSensorTimeoutCheck() {

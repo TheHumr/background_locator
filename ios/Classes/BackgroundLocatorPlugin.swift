@@ -21,6 +21,11 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
     private var bluetoothSensorMissingTimeout: TimeInterval = 120
     private var bluetoothSensorLastSeenAt: Date?
     private var bluetoothSensorTimeoutWorkItem: DispatchWorkItem?
+    // A single physical advertisement is often reported by CoreBluetooth as two separate
+    // didDiscover calls (advertising packet + scan response), a few ms apart with slightly
+    // different RSSI. Debounce per MAC so that doesn't turn into two REC45 sends.
+    private var bluetoothSensorDataLastSentAt: [String: Date] = [:]
+    private let bluetoothSensorDataDebounceInterval: TimeInterval = 2
     private var locationTracking: Bool = false {
         didSet {
             sendIsLocationTrackingEvent(value: locationTracking)
@@ -262,6 +267,28 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
         bluetoothSensorLastSeenAt = Date()
         scheduleBluetoothSensorTimeoutCheck()
         reloadLocationTrackingForCurrentConditions()
+
+        let normalizedMac = normalizeMac(mac)
+        let now = Date()
+        if let lastSentAt = bluetoothSensorDataLastSentAt[normalizedMac], now.timeIntervalSince(lastSentAt) < bluetoothSensorDataDebounceInterval {
+            return
+        }
+        bluetoothSensorDataLastSentAt[normalizedMac] = now
+
+        let advData = stripCompanyId(manufacturerData: data)
+        print("sensor_seen mac=\(mac) rssi=\(RSSI.intValue) advDataLength=\(advData.count)")
+        sendBluetoothSensorDataEvent(mac: mac, rssi: RSSI.intValue, advData: advData)
+    }
+
+    // CBAdvertisementDataManufacturerDataKey sometimes still carries the 2-byte company ID
+    // prefix (see the same check in parseLevelSensorMac below); Android's
+    // getManufacturerSpecificData(0x0AE8) already strips it, so mirror that here.
+    func stripCompanyId(manufacturerData: Data) -> Data {
+        let data = [UInt8](manufacturerData)
+        guard data.count >= 2, data[0] == 0xE8, data[1] == 0x0A else {
+            return manufacturerData
+        }
+        return manufacturerData.subdata(in: 2..<manufacturerData.count)
     }
 
     func scheduleBluetoothSensorTimeoutCheck() {
@@ -314,6 +341,16 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
             kArgIsLocationTracking: value,
         ]
         invokeMethod(method: kBCMIsLocationTracking, arguments: map)
+    }
+
+    func sendBluetoothSensorDataEvent(mac: String, rssi: Int, advData: Data) {
+        let map: NSDictionary! = [
+            kArgCallback: PreferencesManager.getCallbackHandle(key: kCallbackKey),
+            kArgBluetoothSensorMac: mac,
+            kArgBluetoothSensorRssi: rssi,
+            kArgBluetoothSensorAdvData: FlutterStandardTypedData(bytes: advData),
+        ]
+        invokeMethod(method: kBCMBluetoothSensorData, arguments: map)
     }
     
     func getLocationMap(location: CLLocation) -> NSDictionary {
