@@ -134,6 +134,14 @@ class Keys {
         @JvmStatic
         val ARG_IS_LOCATION_TRACKING = "isLocationTracking"
 
+        @JvmStatic
+        val ARG_BLUETOOTH_SENSOR_MAC = "bluetoothSensorMac"
+
+        @JvmStatic
+        val ARG_BLUETOOTH_SENSOR_RSSI = "bluetoothSensorRssi"
+
+        @JvmStatic
+        val ARG_BLUETOOTH_SENSOR_ADV_DATA = "bluetoothSensorAdvData"
 
         @JvmStatic
         val SETTINGS_ACCURACY = "settings_accuracy"
@@ -230,6 +238,9 @@ class Keys {
 
         @JvmStatic
         val BCM_ACTIVITY_RECOGNITION = "BCM_ACTIVITY_RECOGNITION"
+
+        @JvmStatic
+        val BCM_BLUETOOTH_SENSOR_DATA = "BCM_BLUETOOTH_SENSOR_DATA"
 
         @JvmStatic
         val NOTIFICATION_ACTION = "com.yukams.background_locator_2.notification"
