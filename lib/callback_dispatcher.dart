@@ -57,6 +57,13 @@ void callbackDispatcher() {
       final isLocationTracking = args[Keys.ARG_IS_LOCATION_TRACKING];
       final Function callback = PluginUtilities.getCallbackFromHandle(CallbackHandle.fromRawHandle(args[Keys.ARG_CALLBACK]))!;
       callback({Keys.ARG_IS_LOCATION_TRACKING: isLocationTracking});
+    } else if (Keys.BCM_BLUETOOTH_SENSOR_DATA == call.method) {
+      final Map<dynamic, dynamic> args = call.arguments;
+      final String mac = args[Keys.ARG_BLUETOOTH_SENSOR_MAC];
+      final int rssi = args[Keys.ARG_BLUETOOTH_SENSOR_RSSI];
+      final Uint8List advData = args[Keys.ARG_BLUETOOTH_SENSOR_ADV_DATA];
+      final Function callback = PluginUtilities.getCallbackFromHandle(CallbackHandle.fromRawHandle(args[Keys.ARG_CALLBACK]))!;
+      callback({Keys.ARG_BLUETOOTH_SENSOR_MAC: mac, Keys.ARG_BLUETOOTH_SENSOR_RSSI: rssi, Keys.ARG_BLUETOOTH_SENSOR_ADV_DATA: advData});
     }
   });
   _backgroundChannel.invokeMethod(Keys.METHOD_SERVICE_INITIALIZED);
