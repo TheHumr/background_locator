@@ -114,10 +114,7 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         @JvmStatic
         private var bluetoothSensorLastSeenAt: Long? = null
 
-        // A single physical advertisement can be reported by more than one onScanResult
-        // callback (e.g. legacy adv + scan response merged separately by the platform),
-        // a few ms apart with slightly different RSSI. Debounce per MAC so that doesn't
-        // turn into two REC45 sends.
+        // Debounces duplicate onScanResult callbacks for the same advertisement.
         @JvmStatic
         private val bluetoothSensorDataLastSentAt: MutableMap<String, Long> = mutableMapOf()
 
@@ -821,11 +818,8 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         scheduleBluetoothSensorTimeoutCheck()
         reloadLocationUpdatesForCurrentConditions()
 
-        // This sensor's advertisement carries manufacturer data for company ID 0x0AE8 twice
-        // (once in the advertising packet with real sensor readings, once in the scan
-        // response with just a repeated mode byte + MAC). ScanRecord.getManufacturerSpecificData()
-        // only keeps one occurrence per company ID and, on this hardware, keeps the wrong
-        // (shorter, non-sensor) one - so parse the raw bytes manually and take the longest match.
+        // getManufacturerSpecificData() only keeps one occurrence per company ID; some
+        // sensors advertise it twice, so parse the raw bytes and take the longest match.
         val rawBytes = result.scanRecord?.bytes
         val advData = rawBytes?.let { findLongestManufacturerSpecificData(it, 0x0AE8) }
         if (advData == null || advData.isEmpty()) {
@@ -845,11 +839,8 @@ class IsolateHolderService : MethodChannel.MethodCallHandler, LocationUpdateList
         context?.let { sendBluetoothSensorDataEvent(it, result.device.address, result.rssi, advData) }
     }
 
-    // Manually walks the raw BLE advertisement AD structures (length-prefixed: 1 length byte,
-    // 1 type byte, then `length - 1` data bytes) looking for every Manufacturer Specific Data
-    // (type 0xFF) structure whose 2-byte little-endian company ID matches, and returns the
-    // longest payload found - see the comment at the call site for why "longest" rather than
-    // "first"/"last".
+    // Walks the raw AD structures (length byte, type byte, payload) for Manufacturer
+    // Specific Data (type 0xFF) matching companyId, returning the longest payload found.
     private fun findLongestManufacturerSpecificData(rawBytes: ByteArray, companyId: Int): ByteArray? {
         var best: ByteArray? = null
         var i = 0

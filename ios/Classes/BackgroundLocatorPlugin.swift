@@ -21,9 +21,7 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
     private var bluetoothSensorMissingTimeout: TimeInterval = 120
     private var bluetoothSensorLastSeenAt: Date?
     private var bluetoothSensorTimeoutWorkItem: DispatchWorkItem?
-    // A single physical advertisement is often reported by CoreBluetooth as two separate
-    // didDiscover calls (advertising packet + scan response), a few ms apart with slightly
-    // different RSSI. Debounce per MAC so that doesn't turn into two REC45 sends.
+    // Debounces duplicate didDiscover calls for the same advertisement.
     private var bluetoothSensorDataLastSentAt: [String: Date] = [:]
     private let bluetoothSensorDataDebounceInterval: TimeInterval = 2
     private var locationTracking: Bool = false {
@@ -280,9 +278,7 @@ public class BackgroundLocatorPlugin: NSObject, FlutterPlugin, CLLocationManager
         sendBluetoothSensorDataEvent(mac: mac, rssi: RSSI.intValue, advData: advData)
     }
 
-    // CBAdvertisementDataManufacturerDataKey sometimes still carries the 2-byte company ID
-    // prefix (see the same check in parseLevelSensorMac below); Android's
-    // getManufacturerSpecificData(0x0AE8) already strips it, so mirror that here.
+    // Strips the 2-byte company ID prefix some devices leave on manufacturer data.
     func stripCompanyId(manufacturerData: Data) -> Data {
         let data = [UInt8](manufacturerData)
         guard data.count >= 2, data[0] == 0xE8, data[1] == 0x0A else {
